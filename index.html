@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <!-- Viewport para pantalla completa en móviles sin zoom -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Calculadora</title>
+
+  <!-- Opciones para Web App (PWA / Modo App en iOS) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px 18px 25px 18px;
+      overflow: hidden;
+    }
+
+    /* Iconos superiores */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    .top-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: #1c1c1e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .top-icon svg {
+      fill: none;
+      stroke: #fff;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Pantalla de la calculadora */
+    .display-container {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding: 10px 12px;
+      word-break: break-all;
+    }
+
+    .display {
+      font-size: 80px;
+      font-weight: 300;
+      color: #fff;
+      text-align: right;
+      line-height: 1;
+      max-width: 100%;
+      letter-spacing: -2px;
+    }
+
+    /* Grid del teclado */
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+
+    /* Botones principales */
+    .btn {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: none;
+      font-size: 34px;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      outline: none;
+      transition: filter 0.1s ease;
+    }
+
+    .btn:active {
+      filter: brightness(1.4);
+    }
+
+    /* Tipos de botones por color */
+    .btn-dark {
+      background-color: #2a2a2c;
+      color: #fff;
+    }
+
+    .btn-orange {
+      background-color: #ff9f0a;
+      color: #fff;
+      font-size: 38px;
+    }
+
+    .btn-orange:active {
+      filter: brightness(1.2);
+    }
+
+    /* Iconos dentro de los botones */
+    .btn svg {
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Barra inferior de inicio en iOS */
+    .home-indicator-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-top: 10px;
+    }
+
+    .home-indicator {
+      width: 135px;
+      height: 5px;
+      background-color: #fff;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra Superior -->
+  <div class="top-bar">
+    <div class="top-icon">
+      <!-- Icono Reloj/Historial -->
+      <svg width="20" height="20" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <polyline points="12 7 12 12 15 15" />
+      </svg>
+    </div>
+    <div class="top-icon">
+      <!-- Icono Teclado/Matriz -->
+      <svg width="20" height="20" viewBox="0 0 24 24">
+        <rect x="4" y="4" width="6" height="6" rx="1.5" />
+        <rect x="14" y="4" width="6" height="6" rx="1.5" />
+        <rect x="4" y="14" width="6" height="6" rx="1.5" />
+        <rect x="14" y="14" width="6" height="6" rx="1.5" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- Display -->
+  <div class="display-container">
+    <div class="display" id="display">0</div>
+  </div>
+
+  <!-- Teclado -->
+  <div class="keypad">
+    <!-- Fila 1 -->
+    <button class="btn btn-dark" onclick="handleBackspace()">
+      <svg width="28" height="28" viewBox="0 0 24 24" stroke-width="1.8">
+        <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+        <line x1="18" y1="9" x2="12" y2="15"></line>
+        <line x1="12" y1="9" x2="18" y2="15"></line>
+      </svg>
+    </button>
+    <button class="btn btn-dark" onclick="handleAC()">AC</button>
+    <button class="btn btn-dark" onclick="inputOperator('%')">%</button>
+    <button class="btn btn-orange" onclick="inputOperator('÷')">÷</button>
+
+    <!-- Fila 2 -->
+    <button class="btn btn-dark" onclick="inputDigit('7')">7</button>
+    <button class="btn btn-dark" onclick="inputDigit('8')">8</button>
+    <button class="btn btn-dark" onclick="inputDigit('9')">9</button>
+    <button class="btn btn-orange" onclick="inputOperator('×')">×</button>
+
+    <!-- Fila 3 -->
+    <button class="btn btn-dark" onclick="inputDigit('4')">4</button>
+    <button class="btn btn-dark" onclick="inputDigit('5')">5</button>
+    <button class="btn btn-dark" onclick="inputDigit('6')">6</button>
+    <button class="btn btn-orange" onclick="inputOperator('-')">−</button>
+
+    <!-- Fila 4 -->
+    <button class="btn btn-dark" onclick="inputDigit('1')">1</button>
+    <button class="btn btn-dark" onclick="inputDigit('2')">2</button>
+    <button class="btn btn-dark" onclick="inputDigit('3')">3</button>
+    <button class="btn btn-orange" onclick="inputOperator('+')">+</button>
+
+    <!-- Fila 5 -->
+    <button class="btn btn-dark" onclick="toggleSign()">⁺∕₋</button>
+    <button class="btn btn-dark" onclick="inputDigit('0')">0</button>
+    <button class="btn btn-dark" onclick="inputDecimal()">,</button>
+    <button class="btn btn-orange" onclick="handleEqual()">=</button>
+  </div>
+
+  <!-- Barra Inferior iOS -->
+  <div class="home-indicator-bar">
+    <div class="home-indicator"></div>
+  </div>
+
+  <!-- Lógica de Funcionamiento Básica -->
+  <script>
+    const displayElement = document.getElementById('display');
+    let currentValue = '0';
+    let previousValue = null;
+    let operator = null;
+    let waitingForSecondOperand = false;
+
+    function updateDisplay() {
+      displayElement.innerText = currentValue;
+      adjustFontSize();
+    }
+
+    function adjustFontSize() {
+      const len = currentValue.length;
+      if (len > 9) {
+        displayElement.style.fontSize = '45px';
+      } else if (len > 6) {
+        displayElement.style.fontSize = '60px';
+      } else {
+        displayElement.style.fontSize = '80px';
+      }
+    }
+
+    function inputDigit(digit) {
+      if (waitingForSecondOperand) {
+        currentValue = digit;
+        waitingForSecondOperand = false;
+      } else {
+        currentValue = currentValue === '0' ? digit : currentValue + digit;
+      }
+      updateDisplay();
+    }
+
+    function inputDecimal() {
+      if (waitingForSecondOperand) {
+        currentValue = '0,';
+        waitingForSecondOperand = false;
+        updateDisplay();
+        return;
+      }
+      if (!currentValue.includes(',')) {
+        currentValue += ',';
+        updateDisplay();
+      }
+    }
+
+    function handleAC() {
+      currentValue = '0';
+      previousValue = null;
+      operator = null;
+      waitingForSecondOperand = false;
+      updateDisplay();
+    }
+
+    function handleBackspace() {
+      if (waitingForSecondOperand) return;
+      if (currentValue.length > 1) {
+        currentValue = currentValue.slice(0, -1);
+      } else {
+        currentValue = '0';
+      }
+      updateDisplay();
+    }
+
+    function toggleSign() {
+      if (currentValue === '0') return;
+      if (currentValue.startsWith('-')) {
+        currentValue = currentValue.substring(1);
+      } else {
+        currentValue = '-' + currentValue;
+      }
+      updateDisplay();
+    }
+
+    function inputOperator(op) {
+      operator = op;
+      previousValue = currentValue;
+      waitingForSecondOperand = true;
+    }
+
+    function handleEqual() {
+      // De momento realiza un cálculo estándar real
+      if (operator === null || previousValue === null) return;
+      
+      const num1 = parseFloat(previousValue.replace(',', '.'));
+      const num2 = parseFloat(currentValue.replace(',', '.'));
+      let result = 0;
+
+      switch (operator) {
+        case '+': result = num1 + num2; break;
+        case '-': result = num1 - num2; break;
+        case '×': result = num1 * num2; break;
+        case '÷': result = num2 !== 0 ? num1 / num2 : 'Error'; break;
+        case '%': result = num1 % num2; break;
+      }
+
+      currentValue = String(result).replace('.', ',');
+      operator = null;
+      previousValue = null;
+      waitingForSecondOperand = false;
+      updateDisplay();
+    }
+  </script>
+</body>
+</html>
