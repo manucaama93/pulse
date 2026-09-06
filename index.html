@@ -55,16 +55,28 @@
       stroke-linejoin: round;
     }
 
+    /* Pantalla con doble línea */
     .display-container {
       flex: 1;
       display: flex;
+      flex-direction: column;
       align-items: flex-end;
       justify-content: flex-end;
       padding: 10px 12px;
       word-break: break-all;
     }
 
-    .display {
+    .expression-line {
+      font-size: 28px;
+      font-weight: 300;
+      color: #8e8e93;
+      text-align: right;
+      min-height: 34px;
+      line-height: 1.2;
+      letter-spacing: -1px;
+    }
+
+    .main-line {
       font-size: 80px;
       font-weight: 300;
       color: #fff;
@@ -72,6 +84,7 @@
       line-height: 1;
       max-width: 100%;
       letter-spacing: -2px;
+      transition: font-size 0.1s ease;
     }
 
     .keypad {
@@ -156,7 +169,8 @@
   </div>
 
   <div class="display-container">
-    <div class="display" id="display">0</div>
+    <div class="expression-line" id="expressionLine"></div>
+    <div class="main-line" id="mainLine">0</div>
   </div>
 
   <div class="keypad">
@@ -167,7 +181,7 @@
         <line x1="12" y1="9" x2="18" y2="15"></line>
       </svg>
     </button>
-    <button class="btn btn-dark" onclick="handleAC()">AC</button>
+    <button class="btn btn-dark" id="clearBtn" onclick="handleAC()">AC</button>
     <button class="btn btn-dark" onclick="inputOperator('%')">%</button>
     <button class="btn btn-orange" onclick="inputOperator('÷')">÷</button>
 
@@ -197,56 +211,62 @@
   </div>
 
   <script>
-    const displayElement = document.getElementById('display');
-    let currentValue = '0'; // Cadena pura sin puntos de millar (ej: "1234")
+    const mainLineEl = document.getElementById('mainLine');
+    const expressionLineEl = document.getElementById('expressionLine');
+    const clearBtnEl = document.getElementById('clearBtn');
+
+    let currentValue = '0';
     let previousValue = null;
     let operator = null;
     let waitingForSecondOperand = false;
+    let expressionString = '';
 
-    // Control de estados de la rutina:
+    // Estados rutina
     let stage = 0; 
     let currentX = 0;
     let targetResult = 0;
     let forcedAddendStr = '';
     let forcedIndex = 0;
 
-    // Formatea la cadena pura agregando puntos de millar estilo iOS
-    function formatNumberWithThousandSeparators(valStr) {
+    function formatNumber(valStr) {
       if (!valStr || valStr === 'Error') return valStr;
-
       const parts = valStr.split(',');
       let integerPart = parts[0];
       const decimalPart = parts.length > 1 ? ',' + parts[1] : '';
 
       const isNegative = integerPart.startsWith('-');
-      if (isNegative) {
-        integerPart = integerPart.substring(1);
-      }
+      if (isNegative) integerPart = integerPart.substring(1);
 
-      // Añade puntos cada 3 dígitos de derecha a izquierda
       const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-
       return (isNegative ? '-' : '') + formattedInteger + decimalPart;
     }
 
-    function updateDisplay(val) {
-      const rawVal = val !== undefined ? val : currentValue;
-      const formattedVal = formatNumberWithThousandSeparators(rawVal);
-      displayElement.innerText = formattedVal;
-      adjustFontSize(formattedVal);
+    function updateDisplay() {
+      // Si estamos introduciendo la operación, mostramos la expresión completa en la línea principal
+      if (operator && !waitingForSecondOperand && stage !== 4) {
+        const expr = `${formatNumber(previousValue)}${operator}${formatNumber(currentValue)}`;
+        mainLineEl.innerText = expr;
+        adjustFontSize(expr);
+      } else if (waitingForSecondOperand && operator && stage !== 4) {
+        const expr = `${formatNumber(previousValue)}${operator}`;
+        mainLineEl.innerText = expr;
+        adjustFontSize(expr);
+      } else {
+        const formatted = formatNumber(currentValue);
+        mainLineEl.innerText = formatted;
+        adjustFontSize(formatted);
+      }
+
+      // Actualización de botón C / AC
+      clearBtnEl.innerText = (currentValue !== '0' || previousValue !== null) ? 'C' : 'AC';
     }
 
     function adjustFontSize(text) {
       const len = text.length;
-      if (len > 12) {
-        displayElement.style.fontSize = '32px';
-      } else if (len > 9) {
-        displayElement.style.fontSize = '48px';
-      } else if (len > 6) {
-        displayElement.style.fontSize = '64px';
-      } else {
-        displayElement.style.fontSize = '80px';
-      }
+      if (len > 12) mainLineEl.style.fontSize = '32px';
+      else if (len > 9) mainLineEl.style.fontSize = '48px';
+      else if (len > 6) mainLineEl.style.fontSize = '64px';
+      else mainLineEl.style.fontSize = '80px';
     }
 
     function getFutureTargetNumber() {
@@ -265,11 +285,8 @@
     function handleDigitPress(digit) {
       if (stage === 4) {
         if (forcedIndex < forcedAddendStr.length) {
-          if (forcedIndex === 0) {
-            currentValue = forcedAddendStr[0];
-          } else {
-            currentValue += forcedAddendStr[forcedIndex];
-          }
+          if (forcedIndex === 0) currentValue = forcedAddendStr[0];
+          else currentValue += forcedAddendStr[forcedIndex];
           forcedIndex++;
           updateDisplay();
         }
@@ -295,17 +312,22 @@
         forcedAddendStr = String(addendY);
         forcedIndex = 0;
         operator = '+';
+        previousValue = String(currentX);
         waitingForSecondOperand = true;
+        expressionLineEl.innerText = '';
         return;
       }
 
       operator = op;
       previousValue = currentValue;
       waitingForSecondOperand = true;
+      expressionLineEl.innerText = '';
+      updateDisplay();
     }
 
     function handleEqual() {
       if (stage === 4) {
+        expressionLineEl.innerText = `${formatNumber(previousValue)}+${formatNumber(currentValue)}`;
         currentValue = String(targetResult);
         stage = 0;
         operator = null;
@@ -320,6 +342,7 @@
         const num2 = parseFloat(currentValue.replace(',', '.'));
         const sum = num1 + num2;
 
+        expressionLineEl.innerText = `${formatNumber(previousValue)}+${formatNumber(currentValue)}`;
         currentValue = String(sum).replace('.', ',');
         stage = 2;
         operator = null;
@@ -334,6 +357,7 @@
         const num2 = parseFloat(currentValue.replace(',', '.'));
         currentX = Math.round(num1 * num2);
 
+        expressionLineEl.innerText = `${formatNumber(previousValue)}×${formatNumber(currentValue)}`;
         currentValue = String(currentX).replace('.', ',');
         stage = 3;
         operator = null;
@@ -355,6 +379,7 @@
         case '÷': result = num2 !== 0 ? num1 / num2 : 'Error'; break;
       }
 
+      expressionLineEl.innerText = `${formatNumber(previousValue)}${operator}${formatNumber(currentValue)}`;
       currentValue = String(result).replace('.', ',');
       operator = null;
       previousValue = null;
@@ -372,6 +397,7 @@
       targetResult = 0;
       forcedAddendStr = '';
       forcedIndex = 0;
+      expressionLineEl.innerText = '';
       updateDisplay();
     }
 
