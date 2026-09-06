@@ -55,7 +55,6 @@
       stroke-linejoin: round;
     }
 
-    /* Pantalla con doble línea */
     .display-container {
       flex: 1;
       display: flex;
@@ -63,7 +62,7 @@
       align-items: flex-end;
       justify-content: flex-end;
       padding: 10px 12px;
-      word-break: break-all;
+      overflow: hidden;
     }
 
     .expression-line {
@@ -74,17 +73,28 @@
       min-height: 34px;
       line-height: 1.2;
       letter-spacing: -1px;
+      width: 100%;
+    }
+
+    .main-line-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      white-space: nowrap;
+      text-align: right;
+      scrollbar-width: none;
+    }
+
+    .main-line-wrapper::-webkit-scrollbar {
+      display: none;
     }
 
     .main-line {
       font-size: 80px;
       font-weight: 300;
       color: #fff;
-      text-align: right;
+      display: inline-block;
       line-height: 1;
-      max-width: 100%;
       letter-spacing: -2px;
-      transition: font-size 0.1s ease;
     }
 
     .keypad {
@@ -170,7 +180,9 @@
 
   <div class="display-container">
     <div class="expression-line" id="expressionLine"></div>
-    <div class="main-line" id="mainLine">0</div>
+    <div class="main-line-wrapper" id="mainWrapper">
+      <div class="main-line" id="mainLine">0</div>
+    </div>
   </div>
 
   <div class="keypad">
@@ -212,6 +224,7 @@
 
   <script>
     const mainLineEl = document.getElementById('mainLine');
+    const mainWrapperEl = document.getElementById('mainWrapper');
     const expressionLineEl = document.getElementById('expressionLine');
     const clearBtnEl = document.getElementById('clearBtn');
 
@@ -219,7 +232,6 @@
     let previousValue = null;
     let operator = null;
     let waitingForSecondOperand = false;
-    let expressionString = '';
 
     // Estados rutina
     let stage = 0; 
@@ -241,24 +253,36 @@
       return (isNegative ? '-' : '') + formattedInteger + decimalPart;
     }
 
+    function scrollToRight() {
+      setTimeout(() => {
+        mainWrapperEl.scrollLeft = mainWrapperEl.scrollWidth;
+      }, 0);
+    }
+
     function updateDisplay() {
-      // Si estamos introduciendo la operación, mostramos la expresión completa en la línea principal
-      if (operator && !waitingForSecondOperand && stage !== 4) {
-        const expr = `${formatNumber(previousValue)}${operator}${formatNumber(currentValue)}`;
-        mainLineEl.innerText = expr;
-        adjustFontSize(expr);
-      } else if (waitingForSecondOperand && operator && stage !== 4) {
-        const expr = `${formatNumber(previousValue)}${operator}`;
-        mainLineEl.innerText = expr;
-        adjustFontSize(expr);
+      if (stage === 4) {
+        mainLineEl.style.fontSize = '80px';
+        const currentTypedAddend = forcedAddendStr.substring(0, forcedIndex);
+        const formattedAddend = currentTypedAddend ? formatNumber(currentTypedAddend) : '';
+        mainLineEl.innerText = `${formatNumber(String(currentX))}+${formattedAddend}`;
+        scrollToRight();
+      } else if (operator) {
+        // Durante cualquier operación compuesta en pantalla se fija la fuente a 80px y se hace scroll
+        mainLineEl.style.fontSize = '80px';
+        if (!waitingForSecondOperand) {
+          mainLineEl.innerText = `${formatNumber(previousValue)}${operator}${formatNumber(currentValue)}`;
+        } else {
+          mainLineEl.innerText = `${formatNumber(previousValue)}${operator}`;
+        }
+        scrollToRight();
       } else {
+        // Si es un número único (resultado final o número antes de pulsar operador) ajusta la fuente dinámicamente
         const formatted = formatNumber(currentValue);
         mainLineEl.innerText = formatted;
         adjustFontSize(formatted);
       }
 
-      // Actualización de botón C / AC
-      clearBtnEl.innerText = (currentValue !== '0' || previousValue !== null) ? 'C' : 'AC';
+      clearBtnEl.innerText = (currentValue !== '0' || previousValue !== null || stage === 4) ? 'C' : 'AC';
     }
 
     function adjustFontSize(text) {
@@ -285,8 +309,6 @@
     function handleDigitPress(digit) {
       if (stage === 4) {
         if (forcedIndex < forcedAddendStr.length) {
-          if (forcedIndex === 0) currentValue = forcedAddendStr[0];
-          else currentValue += forcedAddendStr[forcedIndex];
           forcedIndex++;
           updateDisplay();
         }
@@ -313,8 +335,9 @@
         forcedIndex = 0;
         operator = '+';
         previousValue = String(currentX);
-        waitingForSecondOperand = true;
+        waitingForSecondOperand = false;
         expressionLineEl.innerText = '';
+        updateDisplay();
         return;
       }
 
@@ -327,7 +350,7 @@
 
     function handleEqual() {
       if (stage === 4) {
-        expressionLineEl.innerText = `${formatNumber(previousValue)}+${formatNumber(currentValue)}`;
+        expressionLineEl.innerText = `${formatNumber(String(currentX))}+${formatNumber(forcedAddendStr)}`;
         currentValue = String(targetResult);
         stage = 0;
         operator = null;
