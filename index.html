@@ -61,7 +61,7 @@
       flex-direction: column;
       align-items: flex-end;
       justify-content: flex-end;
-      padding: 0 4px 12px 4px; /* Padding reducido para ganar ancho horizontal */
+      padding: 0 4px 12px 4px;
       overflow: hidden;
       width: 100%;
     }
@@ -90,7 +90,7 @@
     }
 
     .main-line {
-      font-size: 62px; /* Reducido de 80px a 62px para ajustar exacto 1.234+1.234 */
+      font-size: 62px;
       font-weight: 300;
       color: #fff;
       display: inline-block;
@@ -259,36 +259,59 @@
       }, 0);
     }
 
-    function updateDisplay() {
-      if (stage === 4) {
+    function adjustOperationFontSize(text) {
+      const len = text.length;
+      // Hasta 11 caracteres (ej. 1.234+1.234) -> 62px
+      if (len <= 11) {
         mainLineEl.style.fontSize = '62px';
-        const currentTypedAddend = forcedAddendStr.substring(0, forcedIndex);
-        const formattedAddend = currentTypedAddend ? formatNumber(currentTypedAddend) : '';
-        mainLineEl.innerText = `${formatNumber(String(currentX))}+${formattedAddend}`;
-        scrollToRight();
-      } else if (operator) {
-        mainLineEl.style.fontSize = '62px';
-        if (!waitingForSecondOperand) {
-          mainLineEl.innerText = `${formatNumber(previousValue)}${operator}${formatNumber(currentValue)}`;
-        } else {
-          mainLineEl.innerText = `${formatNumber(previousValue)}${operator}`;
-        }
-        scrollToRight();
-      } else {
-        const formatted = formatNumber(currentValue);
-        mainLineEl.innerText = formatted;
-        adjustFontSize(formatted);
+      } 
+      // 12 a 13 caracteres (los 2 números extra) -> Reducción progresiva
+      else if (len === 12) {
+        mainLineEl.style.fontSize = '55px';
+      } 
+      else if (len === 13) {
+        mainLineEl.style.fontSize = '48px';
+      } 
+      // Límite mínimo de fuente alcanzado: se mantiene en 48px y activa el scroll
+      else {
+        mainLineEl.style.fontSize = '48px';
       }
-
-      clearBtnEl.innerText = (currentValue !== '0' || previousValue !== null || stage === 4) ? 'C' : 'AC';
     }
 
-    function adjustFontSize(text) {
+    function adjustResultFontSize(text) {
       const len = text.length;
       if (len > 12) mainLineEl.style.fontSize = '28px';
       else if (len > 9) mainLineEl.style.fontSize = '40px';
       else if (len > 6) mainLineEl.style.fontSize = '52px';
       else mainLineEl.style.fontSize = '62px';
+    }
+
+    function updateDisplay() {
+      let fullExprStr = '';
+
+      if (stage === 4) {
+        const currentTypedAddend = forcedAddendStr.substring(0, forcedIndex);
+        const formattedAddend = currentTypedAddend ? formatNumber(currentTypedAddend) : '';
+        fullExprStr = `${formatNumber(String(currentX))}+${formattedAddend}`;
+        mainLineEl.innerText = fullExprStr;
+        adjustOperationFontSize(fullExprStr);
+        scrollToRight();
+      } else if (operator) {
+        if (!waitingForSecondOperand) {
+          fullExprStr = `${formatNumber(previousValue)}${operator}${formatNumber(currentValue)}`;
+        } else {
+          fullExprStr = `${formatNumber(previousValue)}${operator}`;
+        }
+        mainLineEl.innerText = fullExprStr;
+        adjustOperationFontSize(fullExprStr);
+        scrollToRight();
+      } else {
+        const formatted = formatNumber(currentValue);
+        mainLineEl.innerText = formatted;
+        adjustResultFontSize(formatted);
+      }
+
+      clearBtnEl.innerText = (currentValue !== '0' || previousValue !== null || stage === 4) ? 'C' : 'AC';
     }
 
     function getFutureTargetNumber() {
