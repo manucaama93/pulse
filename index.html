@@ -25,7 +25,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 20px 18px 25px 18px;
+      padding: 12px 16px 20px 16px;
       overflow: hidden;
     }
 
@@ -34,7 +34,7 @@
       justify-content: space-between;
       align-items: center;
       padding-top: 10px;
-      padding-bottom: 10px;
+      padding-bottom: 5px;
     }
 
     .top-icon {
@@ -61,18 +61,19 @@
       flex-direction: column;
       align-items: flex-end;
       justify-content: flex-end;
-      padding: 10px 12px;
+      padding: 0 4px 12px 4px; /* Padding reducido para ganar ancho horizontal */
       overflow: hidden;
+      width: 100%;
     }
 
     .expression-line {
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 300;
       color: #8e8e93;
       text-align: right;
-      min-height: 34px;
+      min-height: 28px;
       line-height: 1.2;
-      letter-spacing: -1px;
+      letter-spacing: -0.5px;
       width: 100%;
     }
 
@@ -89,26 +90,26 @@
     }
 
     .main-line {
-      font-size: 80px;
+      font-size: 62px; /* Reducido de 80px a 62px para ajustar exacto 1.234+1.234 */
       font-weight: 300;
       color: #fff;
       display: inline-block;
-      line-height: 1;
-      letter-spacing: -2px;
+      line-height: 1.1;
+      letter-spacing: -1px;
     }
 
     .keypad {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-bottom: 10px;
+      gap: 12px;
+      margin-bottom: 8px;
     }
 
     .btn {
       aspect-ratio: 1;
       border-radius: 50%;
       border: none;
-      font-size: 34px;
+      font-size: 32px;
       font-weight: 400;
       display: flex;
       align-items: center;
@@ -130,7 +131,7 @@
     .btn-orange {
       background-color: #ff9f0a;
       color: #fff;
-      font-size: 38px;
+      font-size: 36px;
     }
 
     .btn-orange:active {
@@ -148,7 +149,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding-top: 10px;
+      padding-top: 4px;
     }
 
     .home-indicator {
@@ -187,7 +188,7 @@
 
   <div class="keypad">
     <button class="btn btn-dark" onclick="handleBackspace()">
-      <svg width="28" height="28" viewBox="0 0 24 24" stroke-width="1.8">
+      <svg width="26" height="26" viewBox="0 0 24 24" stroke-width="1.8">
         <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
         <line x1="18" y1="9" x2="12" y2="15"></line>
         <line x1="12" y1="9" x2="18" y2="15"></line>
@@ -233,7 +234,6 @@
     let operator = null;
     let waitingForSecondOperand = false;
 
-    // Estados rutina
     let stage = 0; 
     let currentX = 0;
     let targetResult = 0;
@@ -261,14 +261,13 @@
 
     function updateDisplay() {
       if (stage === 4) {
-        mainLineEl.style.fontSize = '80px';
+        mainLineEl.style.fontSize = '62px';
         const currentTypedAddend = forcedAddendStr.substring(0, forcedIndex);
         const formattedAddend = currentTypedAddend ? formatNumber(currentTypedAddend) : '';
         mainLineEl.innerText = `${formatNumber(String(currentX))}+${formattedAddend}`;
         scrollToRight();
       } else if (operator) {
-        // Durante cualquier operación compuesta en pantalla se fija la fuente a 80px y se hace scroll
-        mainLineEl.style.fontSize = '80px';
+        mainLineEl.style.fontSize = '62px';
         if (!waitingForSecondOperand) {
           mainLineEl.innerText = `${formatNumber(previousValue)}${operator}${formatNumber(currentValue)}`;
         } else {
@@ -276,7 +275,6 @@
         }
         scrollToRight();
       } else {
-        // Si es un número único (resultado final o número antes de pulsar operador) ajusta la fuente dinámicamente
         const formatted = formatNumber(currentValue);
         mainLineEl.innerText = formatted;
         adjustFontSize(formatted);
@@ -287,10 +285,10 @@
 
     function adjustFontSize(text) {
       const len = text.length;
-      if (len > 12) mainLineEl.style.fontSize = '32px';
-      else if (len > 9) mainLineEl.style.fontSize = '48px';
-      else if (len > 6) mainLineEl.style.fontSize = '64px';
-      else mainLineEl.style.fontSize = '80px';
+      if (len > 12) mainLineEl.style.fontSize = '28px';
+      else if (len > 9) mainLineEl.style.fontSize = '40px';
+      else if (len > 6) mainLineEl.style.fontSize = '52px';
+      else mainLineEl.style.fontSize = '62px';
     }
 
     function getFutureTargetNumber() {
