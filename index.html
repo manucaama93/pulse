@@ -198,50 +198,64 @@
 
   <script>
     const displayElement = document.getElementById('display');
-    let currentValue = '0';
+    let currentValue = '0'; // Cadena pura sin puntos de millar (ej: "1234")
     let previousValue = null;
     let operator = null;
     let waitingForSecondOperand = false;
 
     // Control de estados de la rutina:
-    // 0: Inicio / Estándar
-    // 1: E1 sumó (esperando E2)
-    // 2: E2 dio '=' -> Muestra (N1 + N2)
-    // 3: E3 multiplicó y dio '=' -> Muestra X = (N1 + N2) * N3
-    // 4: Se pulsa '+' -> Modo forzaje activo para E4
     let stage = 0; 
     let currentX = 0;
     let targetResult = 0;
     let forcedAddendStr = '';
     let forcedIndex = 0;
 
-    function updateDisplay(val) {
-      displayElement.innerText = val !== undefined ? val : currentValue;
-      adjustFontSize();
+    // Formatea la cadena pura agregando puntos de millar estilo iOS
+    function formatNumberWithThousandSeparators(valStr) {
+      if (!valStr || valStr === 'Error') return valStr;
+
+      const parts = valStr.split(',');
+      let integerPart = parts[0];
+      const decimalPart = parts.length > 1 ? ',' + parts[1] : '';
+
+      const isNegative = integerPart.startsWith('-');
+      if (isNegative) {
+        integerPart = integerPart.substring(1);
+      }
+
+      // Añade puntos cada 3 dígitos de derecha a izquierda
+      const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+      return (isNegative ? '-' : '') + formattedInteger + decimalPart;
     }
 
-    function adjustFontSize() {
-      const len = displayElement.innerText.length;
-      if (len > 10) {
-        displayElement.style.fontSize = '35px';
-      } else if (len > 7) {
-        displayElement.style.fontSize = '50px';
-      } else if (len > 5) {
-        displayElement.style.fontSize = '65px';
+    function updateDisplay(val) {
+      const rawVal = val !== undefined ? val : currentValue;
+      const formattedVal = formatNumberWithThousandSeparators(rawVal);
+      displayElement.innerText = formattedVal;
+      adjustFontSize(formattedVal);
+    }
+
+    function adjustFontSize(text) {
+      const len = text.length;
+      if (len > 12) {
+        displayElement.style.fontSize = '32px';
+      } else if (len > 9) {
+        displayElement.style.fontSize = '48px';
+      } else if (len > 6) {
+        displayElement.style.fontSize = '64px';
       } else {
         displayElement.style.fontSize = '80px';
       }
     }
 
-    // Genera el número de fecha y hora objetivo (Día Sin Cero Inicial + Mes Sin Cero Inicial + Año + Hora + Minutos)
-    // Ejemplo para el 6/9/2026 a las 18:30 -> 6920261830
     function getFutureTargetNumber() {
       const now = new Date();
-      now.setMinutes(now.getMinutes() + 5); // +5 minutos de margen
+      now.setMinutes(now.getMinutes() + 5);
 
-      const day = String(now.getDate());             // Sin '0' delante (ej: 6)
-      const month = String(now.getMonth() + 1);     // Sin '0' delante (ej: 9)
-      const year = String(now.getFullYear());       // 2026
+      const day = String(now.getDate());
+      const month = String(now.getMonth() + 1);
+      const year = String(now.getFullYear());
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
 
@@ -250,7 +264,6 @@
 
     function handleDigitPress(digit) {
       if (stage === 4) {
-        // Fase Espectador 4: Teclea al azar y se van escribiendo los dígitos de Y
         if (forcedIndex < forcedAddendStr.length) {
           if (forcedIndex === 0) {
             currentValue = forcedAddendStr[0];
@@ -274,9 +287,8 @@
 
     function inputOperator(op) {
       if (op === '+' && stage === 0) {
-        stage = 1; // Pasamos a esperar a E2
+        stage = 1;
       } else if (op === '+' && stage === 3) {
-        // Se pulsa '+' después de tener el resultado X -> Se activa la trampa
         stage = 4;
         targetResult = getFutureTargetNumber();
         const addendY = targetResult - currentX;
@@ -294,7 +306,6 @@
 
     function handleEqual() {
       if (stage === 4) {
-        // Espectador 4 pulsa '=' -> Se revela el resultado final de fecha y hora
         currentValue = String(targetResult);
         stage = 0;
         operator = null;
@@ -305,13 +316,12 @@
       }
 
       if (operator === '+' && stage === 1) {
-        // Espectador 2 pulsa '=' -> Muestra la suma real (N1 + N2)
         const num1 = parseFloat(previousValue.replace(',', '.'));
         const num2 = parseFloat(currentValue.replace(',', '.'));
         const sum = num1 + num2;
 
         currentValue = String(sum).replace('.', ',');
-        stage = 2; // Esperando presionar '×'
+        stage = 2;
         operator = null;
         previousValue = null;
         waitingForSecondOperand = false;
@@ -320,13 +330,12 @@
       }
 
       if (operator === '×' && stage === 2) {
-        // Espectador 3 pulsa '=' -> Muestra el resultado real X = (N1 + N2) * N3
         const num1 = parseFloat(previousValue.replace(',', '.'));
         const num2 = parseFloat(currentValue.replace(',', '.'));
         currentX = Math.round(num1 * num2);
 
         currentValue = String(currentX).replace('.', ',');
-        stage = 3; // Esperando presionar '+'
+        stage = 3;
         operator = null;
         previousValue = null;
         waitingForSecondOperand = false;
@@ -334,7 +343,6 @@
         return;
       }
 
-      // Operación normal
       if (operator === null || previousValue === null) return;
       const num1 = parseFloat(previousValue.replace(',', '.'));
       const num2 = parseFloat(currentValue.replace(',', '.'));
