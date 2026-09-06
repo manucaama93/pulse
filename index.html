@@ -259,56 +259,56 @@
       }, 0);
     }
 
-    function adjustOperationFontSize(text) {
-      const len = text.length;
-      // Hasta 11 caracteres (ej. 1.234+1.234) -> 62px
-      if (len <= 11) {
-        mainLineEl.style.fontSize = '62px';
-      } 
-      // 12 a 13 caracteres (los 2 números extra) -> Reducción progresiva
-      else if (len === 12) {
-        mainLineEl.style.fontSize = '55px';
-      } 
-      else if (len === 13) {
-        mainLineEl.style.fontSize = '48px';
-      } 
-      // Límite mínimo de fuente alcanzado: se mantiene en 48px y activa el scroll
-      else {
-        mainLineEl.style.fontSize = '48px';
+    // Calcula el tamaño base del número según su longitud estándar de dígitos
+    function getBaseFontSizeForValue(valStr) {
+      const len = valStr.length;
+      if (len > 12) return 28;
+      if (len > 9) return 40;
+      if (len > 6) return 52;
+      return 62;
+    }
+
+    // Maneja la escala exacta durante la construcción de la expresión
+    function adjustDynamicFontSize(baseValueStr, secondOperandStr) {
+      const baseSize = getBaseFontSizeForValue(baseValueStr);
+      const addedLen = secondOperandStr ? secondOperandStr.length : 0;
+
+      // Al añadir los 3 primeros dígitos del segundo operando, reduce proporcionalmente
+      if (addedLen === 0) {
+        mainLineEl.style.fontSize = `${baseSize}px`;
+      } else if (addedLen === 1) {
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 4, 44)}px`;
+      } else if (addedLen === 2) {
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 7, 40)}px`;
+      } else if (addedLen === 3) {
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 10, 36)}px`;
+      } else {
+        // A partir del 4º dígito, congela el tamaño de fuente y permite scroll
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 10, 36)}px`;
       }
     }
 
-    function adjustResultFontSize(text) {
-      const len = text.length;
-      if (len > 12) mainLineEl.style.fontSize = '28px';
-      else if (len > 9) mainLineEl.style.fontSize = '40px';
-      else if (len > 6) mainLineEl.style.fontSize = '52px';
-      else mainLineEl.style.fontSize = '62px';
-    }
-
     function updateDisplay() {
-      let fullExprStr = '';
-
       if (stage === 4) {
         const currentTypedAddend = forcedAddendStr.substring(0, forcedIndex);
+        const formattedBase = formatNumber(String(currentX));
         const formattedAddend = currentTypedAddend ? formatNumber(currentTypedAddend) : '';
-        fullExprStr = `${formatNumber(String(currentX))}+${formattedAddend}`;
-        mainLineEl.innerText = fullExprStr;
-        adjustOperationFontSize(fullExprStr);
+        
+        mainLineEl.innerText = `${formattedBase}+${formattedAddend}`;
+        adjustDynamicFontSize(formattedBase, currentTypedAddend);
         scrollToRight();
       } else if (operator) {
-        if (!waitingForSecondOperand) {
-          fullExprStr = `${formatNumber(previousValue)}${operator}${formatNumber(currentValue)}`;
-        } else {
-          fullExprStr = `${formatNumber(previousValue)}${operator}`;
-        }
-        mainLineEl.innerText = fullExprStr;
-        adjustOperationFontSize(fullExprStr);
+        const formattedBase = formatNumber(previousValue);
+        const formattedSecond = !waitingForSecondOperand ? formatNumber(currentValue) : '';
+        const secondRaw = !waitingForSecondOperand ? currentValue : '';
+
+        mainLineEl.innerText = `${formattedBase}${operator}${formattedSecond}`;
+        adjustDynamicFontSize(formattedBase, secondRaw);
         scrollToRight();
       } else {
         const formatted = formatNumber(currentValue);
         mainLineEl.innerText = formatted;
-        adjustResultFontSize(formatted);
+        mainLineEl.style.fontSize = `${getBaseFontSizeForValue(formatted)}px`;
       }
 
       clearBtnEl.innerText = (currentValue !== '0' || previousValue !== null || stage === 4) ? 'C' : 'AC';
