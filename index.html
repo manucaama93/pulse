@@ -203,11 +203,16 @@
     let operator = null;
     let waitingForSecondOperand = false;
 
-    // Variables de control de magia
-    let stage = 0; // 0: Inicial, 1: E1 sumó, 2: E2 sumó y dio =, 3: En multiplicación trucada
-    let baseSum = 0;
+    // Control de estados de la rutina:
+    // 0: Inicio / Estándar
+    // 1: E1 sumó (esperando E2)
+    // 2: E2 dio '=' -> Muestra (N1 + N2)
+    // 3: E3 multiplicó y dio '=' -> Muestra X = (N1 + N2) * N3
+    // 4: Se pulsa '+' -> Modo forzaje activo para E4
+    let stage = 0; 
+    let currentX = 0;
     let targetResult = 0;
-    let forcedMultiplierStr = '';
+    let forcedAddendStr = '';
     let forcedIndex = 0;
 
     function updateDisplay(val) {
@@ -228,29 +233,29 @@
       }
     }
 
-    // Calcula la fecha y hora futura (+5 minutos)
+    // Genera el número de fecha y hora objetivo (Día Sin Cero Inicial + Mes Sin Cero Inicial + Año + Hora + Minutos)
+    // Ejemplo para el 6/9/2026 a las 18:30 -> 6920261830
     function getFutureTargetNumber() {
       const now = new Date();
-      now.setMinutes(now.getMinutes() + 5);
+      now.setMinutes(now.getMinutes() + 5); // +5 minutos de margen
 
-      const day = String(now.getDate()).padStart(2, '0');
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const year = String(now.getFullYear());
+      const day = String(now.getDate());             // Sin '0' delante (ej: 6)
+      const month = String(now.getMonth() + 1);     // Sin '0' delante (ej: 9)
+      const year = String(now.getFullYear());       // 2026
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
 
-      // Formato: DDMMYYYYHHMM (ej: 060920261805)
       return parseInt(`${day}${month}${year}${hours}${minutes}`, 10);
     }
 
     function handleDigitPress(digit) {
-      if (stage === 3) {
-        // Fase Espectador 3: Escribe dándoles al azar, la app mete los dígitos del multiplicador trucado
-        if (forcedIndex < forcedMultiplierStr.length) {
+      if (stage === 4) {
+        // Fase Espectador 4: Teclea al azar y se van escribiendo los dígitos de Y
+        if (forcedIndex < forcedAddendStr.length) {
           if (forcedIndex === 0) {
-            currentValue = forcedMultiplierStr[0];
+            currentValue = forcedAddendStr[0];
           } else {
-            currentValue += forcedMultiplierStr[forcedIndex];
+            currentValue += forcedAddendStr[forcedIndex];
           }
           forcedIndex++;
           updateDisplay();
@@ -268,21 +273,18 @@
     }
 
     function inputOperator(op) {
-      if (stage === 2 && op === '×') {
-        // Se activa el modo trucado al presionar por después de ver el resultado real
-        stage = 3;
+      if (op === '+' && stage === 0) {
+        stage = 1; // Pasamos a esperar a E2
+      } else if (op === '+' && stage === 3) {
+        // Se pulsa '+' después de tener el resultado X -> Se activa la trampa
+        stage = 4;
         targetResult = getFutureTargetNumber();
-        const multiplier = targetResult / baseSum;
-        // Convertimos a string sin exponentes científicos
-        forcedMultiplierStr = multiplier.toFixed(4).replace('.', ',');
+        const addendY = targetResult - currentX;
+        forcedAddendStr = String(addendY);
         forcedIndex = 0;
-        operator = '×';
+        operator = '+';
         waitingForSecondOperand = true;
         return;
-      }
-
-      if (op === '+') {
-        stage = 1; // Guarda paso de E1
       }
 
       operator = op;
@@ -291,8 +293,8 @@
     }
 
     function handleEqual() {
-      if (stage === 3) {
-        // Espectador 3 pulsa igual -> Se revela el resultado objetivo de fecha/hora
+      if (stage === 4) {
+        // Espectador 4 pulsa '=' -> Se revela el resultado final de fecha y hora
         currentValue = String(targetResult);
         stage = 0;
         operator = null;
@@ -303,13 +305,13 @@
       }
 
       if (operator === '+' && stage === 1) {
-        // Espectador 2 pulsa igual -> Se muestra la suma real de E1 + E2
+        // Espectador 2 pulsa '=' -> Muestra la suma real (N1 + N2)
         const num1 = parseFloat(previousValue.replace(',', '.'));
         const num2 = parseFloat(currentValue.replace(',', '.'));
-        baseSum = num1 + num2;
+        const sum = num1 + num2;
 
-        currentValue = String(baseSum).replace('.', ',');
-        stage = 2; // Queda listo a la espera de presionar '×'
+        currentValue = String(sum).replace('.', ',');
+        stage = 2; // Esperando presionar '×'
         operator = null;
         previousValue = null;
         waitingForSecondOperand = false;
@@ -317,7 +319,22 @@
         return;
       }
 
-      // Cálculo estándar en cualquier otro caso
+      if (operator === '×' && stage === 2) {
+        // Espectador 3 pulsa '=' -> Muestra el resultado real X = (N1 + N2) * N3
+        const num1 = parseFloat(previousValue.replace(',', '.'));
+        const num2 = parseFloat(currentValue.replace(',', '.'));
+        currentX = Math.round(num1 * num2);
+
+        currentValue = String(currentX).replace('.', ',');
+        stage = 3; // Esperando presionar '+'
+        operator = null;
+        previousValue = null;
+        waitingForSecondOperand = false;
+        updateDisplay();
+        return;
+      }
+
+      // Operación normal
       if (operator === null || previousValue === null) return;
       const num1 = parseFloat(previousValue.replace(',', '.'));
       const num2 = parseFloat(currentValue.replace(',', '.'));
@@ -343,15 +360,15 @@
       operator = null;
       waitingForSecondOperand = false;
       stage = 0;
-      baseSum = 0;
+      currentX = 0;
       targetResult = 0;
-      forcedMultiplierStr = '';
+      forcedAddendStr = '';
       forcedIndex = 0;
       updateDisplay();
     }
 
     function handleBackspace() {
-      if (waitingForSecondOperand || stage === 3) return;
+      if (waitingForSecondOperand || stage === 4) return;
       if (currentValue.length > 1) {
         currentValue = currentValue.slice(0, -1);
       } else {
@@ -361,13 +378,13 @@
     }
 
     function toggleSign() {
-      if (currentValue === '0' || stage === 3) return;
+      if (currentValue === '0' || stage === 4) return;
       currentValue = currentValue.startsWith('-') ? currentValue.substring(1) : '-' + currentValue;
       updateDisplay();
     }
 
     function inputDecimal() {
-      if (stage === 3) return;
+      if (stage === 4) return;
       if (waitingForSecondOperand) {
         currentValue = '0,';
         waitingForSecondOperand = false;
