@@ -25,7 +25,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 12px 16px 20px 16px;
+      padding: 12px 16px env(safe-area-inset-bottom, 20px) 16px;
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
@@ -104,7 +104,7 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
-      margin-bottom: 8px;
+      margin-bottom: 28px;
     }
 
     .btn {
@@ -145,20 +145,6 @@
       stroke: currentColor;
       stroke-linecap: round;
       stroke-linejoin: round;
-    }
-
-    .home-indicator-bar {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding-top: 4px;
-    }
-
-    .home-indicator {
-      width: 135px;
-      height: 5px;
-      background-color: #fff;
-      border-radius: 3px;
     }
   </style>
 </head>
@@ -219,10 +205,6 @@
     <button class="btn btn-dark" onclick="handleDigitPress('0')">0</button>
     <button class="btn btn-dark" onclick="inputDecimal()">,</button>
     <button class="btn btn-orange" onclick="handleEqual()">=</button>
-  </div>
-
-  <div class="home-indicator-bar">
-    <div class="home-indicator"></div>
   </div>
 
   <script>
@@ -314,7 +296,7 @@
 
     function getFutureTargetNumber() {
       const now = new Date();
-      now.setMinutes(now.getMinutes() + 3); // Ajustado a +3 minutos
+      now.setMinutes(now.getMinutes() + 3);
 
       const day = String(now.getDate());
       const month = String(now.getMonth() + 1);
