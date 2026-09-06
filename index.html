@@ -2,11 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <!-- Viewport para pantalla completa en móviles sin zoom -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Calculadora</title>
-
-  <!-- Opciones para Web App (PWA / Modo App en iOS) -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -32,7 +29,6 @@
       overflow: hidden;
     }
 
-    /* Iconos superiores */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -49,7 +45,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
     }
 
     .top-icon svg {
@@ -60,7 +55,6 @@
       stroke-linejoin: round;
     }
 
-    /* Pantalla de la calculadora */
     .display-container {
       flex: 1;
       display: flex;
@@ -80,7 +74,6 @@
       letter-spacing: -2px;
     }
 
-    /* Grid del teclado */
     .keypad {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -88,7 +81,6 @@
       margin-bottom: 10px;
     }
 
-    /* Botones principales */
     .btn {
       aspect-ratio: 1;
       border-radius: 50%;
@@ -107,7 +99,6 @@
       filter: brightness(1.4);
     }
 
-    /* Tipos de botones por color */
     .btn-dark {
       background-color: #2a2a2c;
       color: #fff;
@@ -123,7 +114,6 @@
       filter: brightness(1.2);
     }
 
-    /* Iconos dentro de los botones */
     .btn svg {
       fill: none;
       stroke: currentColor;
@@ -131,7 +121,6 @@
       stroke-linejoin: round;
     }
 
-    /* Barra inferior de inicio en iOS */
     .home-indicator-bar {
       display: flex;
       justify-content: center;
@@ -149,17 +138,14 @@
 </head>
 <body>
 
-  <!-- Barra Superior -->
   <div class="top-bar">
     <div class="top-icon">
-      <!-- Icono Reloj/Historial -->
       <svg width="20" height="20" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="9" />
         <polyline points="12 7 12 12 15 15" />
       </svg>
     </div>
     <div class="top-icon">
-      <!-- Icono Teclado/Matriz -->
       <svg width="20" height="20" viewBox="0 0 24 24">
         <rect x="4" y="4" width="6" height="6" rx="1.5" />
         <rect x="14" y="4" width="6" height="6" rx="1.5" />
@@ -169,14 +155,11 @@
     </div>
   </div>
 
-  <!-- Display -->
   <div class="display-container">
     <div class="display" id="display">0</div>
   </div>
 
-  <!-- Teclado -->
   <div class="keypad">
-    <!-- Fila 1 -->
     <button class="btn btn-dark" onclick="handleBackspace()">
       <svg width="28" height="28" viewBox="0 0 24 24" stroke-width="1.8">
         <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
@@ -188,37 +171,31 @@
     <button class="btn btn-dark" onclick="inputOperator('%')">%</button>
     <button class="btn btn-orange" onclick="inputOperator('÷')">÷</button>
 
-    <!-- Fila 2 -->
-    <button class="btn btn-dark" onclick="inputDigit('7')">7</button>
-    <button class="btn btn-dark" onclick="inputDigit('8')">8</button>
-    <button class="btn btn-dark" onclick="inputDigit('9')">9</button>
+    <button class="btn btn-dark" onclick="handleDigitPress('7')">7</button>
+    <button class="btn btn-dark" onclick="handleDigitPress('8')">8</button>
+    <button class="btn btn-dark" onclick="handleDigitPress('9')">9</button>
     <button class="btn btn-orange" onclick="inputOperator('×')">×</button>
 
-    <!-- Fila 3 -->
-    <button class="btn btn-dark" onclick="inputDigit('4')">4</button>
-    <button class="btn btn-dark" onclick="inputDigit('5')">5</button>
-    <button class="btn btn-dark" onclick="inputDigit('6')">6</button>
+    <button class="btn btn-dark" onclick="handleDigitPress('4')">4</button>
+    <button class="btn btn-dark" onclick="handleDigitPress('5')">5</button>
+    <button class="btn btn-dark" onclick="handleDigitPress('6')">6</button>
     <button class="btn btn-orange" onclick="inputOperator('-')">−</button>
 
-    <!-- Fila 4 -->
-    <button class="btn btn-dark" onclick="inputDigit('1')">1</button>
-    <button class="btn btn-dark" onclick="inputDigit('2')">2</button>
-    <button class="btn btn-dark" onclick="inputDigit('3')">3</button>
+    <button class="btn btn-dark" onclick="handleDigitPress('1')">1</button>
+    <button class="btn btn-dark" onclick="handleDigitPress('2')">2</button>
+    <button class="btn btn-dark" onclick="handleDigitPress('3')">3</button>
     <button class="btn btn-orange" onclick="inputOperator('+')">+</button>
 
-    <!-- Fila 5 -->
     <button class="btn btn-dark" onclick="toggleSign()">⁺∕₋</button>
-    <button class="btn btn-dark" onclick="inputDigit('0')">0</button>
+    <button class="btn btn-dark" onclick="handleDigitPress('0')">0</button>
     <button class="btn btn-dark" onclick="inputDecimal()">,</button>
     <button class="btn btn-orange" onclick="handleEqual()">=</button>
   </div>
 
-  <!-- Barra Inferior iOS -->
   <div class="home-indicator-bar">
     <div class="home-indicator"></div>
   </div>
 
-  <!-- Lógica de Funcionamiento Básica -->
   <script>
     const displayElement = document.getElementById('display');
     let currentValue = '0';
@@ -226,23 +203,61 @@
     let operator = null;
     let waitingForSecondOperand = false;
 
-    function updateDisplay() {
-      displayElement.innerText = currentValue;
+    // Variables de control de magia
+    let stage = 0; // 0: Inicial, 1: E1 sumó, 2: E2 sumó y dio =, 3: En multiplicación trucada
+    let baseSum = 0;
+    let targetResult = 0;
+    let forcedMultiplierStr = '';
+    let forcedIndex = 0;
+
+    function updateDisplay(val) {
+      displayElement.innerText = val !== undefined ? val : currentValue;
       adjustFontSize();
     }
 
     function adjustFontSize() {
-      const len = currentValue.length;
-      if (len > 9) {
-        displayElement.style.fontSize = '45px';
-      } else if (len > 6) {
-        displayElement.style.fontSize = '60px';
+      const len = displayElement.innerText.length;
+      if (len > 10) {
+        displayElement.style.fontSize = '35px';
+      } else if (len > 7) {
+        displayElement.style.fontSize = '50px';
+      } else if (len > 5) {
+        displayElement.style.fontSize = '65px';
       } else {
         displayElement.style.fontSize = '80px';
       }
     }
 
-    function inputDigit(digit) {
+    // Calcula la fecha y hora futura (+5 minutos)
+    function getFutureTargetNumber() {
+      const now = new Date();
+      now.setMinutes(now.getMinutes() + 5);
+
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = String(now.getFullYear());
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+
+      // Formato: DDMMYYYYHHMM (ej: 060920261805)
+      return parseInt(`${day}${month}${year}${hours}${minutes}`, 10);
+    }
+
+    function handleDigitPress(digit) {
+      if (stage === 3) {
+        // Fase Espectador 3: Escribe dándoles al azar, la app mete los dígitos del multiplicador trucado
+        if (forcedIndex < forcedMultiplierStr.length) {
+          if (forcedIndex === 0) {
+            currentValue = forcedMultiplierStr[0];
+          } else {
+            currentValue += forcedMultiplierStr[forcedIndex];
+          }
+          forcedIndex++;
+          updateDisplay();
+        }
+        return;
+      }
+
       if (waitingForSecondOperand) {
         currentValue = digit;
         waitingForSecondOperand = false;
@@ -252,7 +267,107 @@
       updateDisplay();
     }
 
+    function inputOperator(op) {
+      if (stage === 2 && op === '×') {
+        // Se activa el modo trucado al presionar por después de ver el resultado real
+        stage = 3;
+        targetResult = getFutureTargetNumber();
+        const multiplier = targetResult / baseSum;
+        // Convertimos a string sin exponentes científicos
+        forcedMultiplierStr = multiplier.toFixed(4).replace('.', ',');
+        forcedIndex = 0;
+        operator = '×';
+        waitingForSecondOperand = true;
+        return;
+      }
+
+      if (op === '+') {
+        stage = 1; // Guarda paso de E1
+      }
+
+      operator = op;
+      previousValue = currentValue;
+      waitingForSecondOperand = true;
+    }
+
+    function handleEqual() {
+      if (stage === 3) {
+        // Espectador 3 pulsa igual -> Se revela el resultado objetivo de fecha/hora
+        currentValue = String(targetResult);
+        stage = 0;
+        operator = null;
+        previousValue = null;
+        waitingForSecondOperand = false;
+        updateDisplay();
+        return;
+      }
+
+      if (operator === '+' && stage === 1) {
+        // Espectador 2 pulsa igual -> Se muestra la suma real de E1 + E2
+        const num1 = parseFloat(previousValue.replace(',', '.'));
+        const num2 = parseFloat(currentValue.replace(',', '.'));
+        baseSum = num1 + num2;
+
+        currentValue = String(baseSum).replace('.', ',');
+        stage = 2; // Queda listo a la espera de presionar '×'
+        operator = null;
+        previousValue = null;
+        waitingForSecondOperand = false;
+        updateDisplay();
+        return;
+      }
+
+      // Cálculo estándar en cualquier otro caso
+      if (operator === null || previousValue === null) return;
+      const num1 = parseFloat(previousValue.replace(',', '.'));
+      const num2 = parseFloat(currentValue.replace(',', '.'));
+      let result = 0;
+
+      switch (operator) {
+        case '+': result = num1 + num2; break;
+        case '-': result = num1 - num2; break;
+        case '×': result = num1 * num2; break;
+        case '÷': result = num2 !== 0 ? num1 / num2 : 'Error'; break;
+      }
+
+      currentValue = String(result).replace('.', ',');
+      operator = null;
+      previousValue = null;
+      waitingForSecondOperand = false;
+      updateDisplay();
+    }
+
+    function handleAC() {
+      currentValue = '0';
+      previousValue = null;
+      operator = null;
+      waitingForSecondOperand = false;
+      stage = 0;
+      baseSum = 0;
+      targetResult = 0;
+      forcedMultiplierStr = '';
+      forcedIndex = 0;
+      updateDisplay();
+    }
+
+    function handleBackspace() {
+      if (waitingForSecondOperand || stage === 3) return;
+      if (currentValue.length > 1) {
+        currentValue = currentValue.slice(0, -1);
+      } else {
+        currentValue = '0';
+      }
+      updateDisplay();
+    }
+
+    function toggleSign() {
+      if (currentValue === '0' || stage === 3) return;
+      currentValue = currentValue.startsWith('-') ? currentValue.substring(1) : '-' + currentValue;
+      updateDisplay();
+    }
+
     function inputDecimal() {
+      if (stage === 3) return;
       if (waitingForSecondOperand) {
         currentValue = '0,';
         waitingForSecondOperand = false;
@@ -263,63 +378,6 @@
         currentValue += ',';
         updateDisplay();
       }
-    }
-
-    function handleAC() {
-      currentValue = '0';
-      previousValue = null;
-      operator = null;
-      waitingForSecondOperand = false;
-      updateDisplay();
-    }
-
-    function handleBackspace() {
-      if (waitingForSecondOperand) return;
-      if (currentValue.length > 1) {
-        currentValue = currentValue.slice(0, -1);
-      } else {
-        currentValue = '0';
-      }
-      updateDisplay();
-    }
-
-    function toggleSign() {
-      if (currentValue === '0') return;
-      if (currentValue.startsWith('-')) {
-        currentValue = currentValue.substring(1);
-      } else {
-        currentValue = '-' + currentValue;
-      }
-      updateDisplay();
-    }
-
-    function inputOperator(op) {
-      operator = op;
-      previousValue = currentValue;
-      waitingForSecondOperand = true;
-    }
-
-    function handleEqual() {
-      // De momento realiza un cálculo estándar real
-      if (operator === null || previousValue === null) return;
-      
-      const num1 = parseFloat(previousValue.replace(',', '.'));
-      const num2 = parseFloat(currentValue.replace(',', '.'));
-      let result = 0;
-
-      switch (operator) {
-        case '+': result = num1 + num2; break;
-        case '-': result = num1 - num2; break;
-        case '×': result = num1 * num2; break;
-        case '÷': result = num2 !== 0 ? num1 / num2 : 'Error'; break;
-        case '%': result = num1 % num2; break;
-      }
-
-      currentValue = String(result).replace('.', ',');
-      operator = null;
-      previousValue = null;
-      waitingForSecondOperand = false;
-      updateDisplay();
     }
   </script>
 </body>
