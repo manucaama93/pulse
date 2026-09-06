@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Calculadora</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,16 +17,20 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    body {
+    html, body {
+      height: 100%;
       background-color: #000;
+      overflow: hidden;
+    }
+
+    body {
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
-      height: 100vh;
+      height: 100dvh; /* Utiliza la altura dinámica real disponible en Safari */
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 12px 16px 20px 16px;
-      overflow: hidden;
+      padding: 6px 16px 12px 16px;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
@@ -35,8 +39,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-top: 10px;
-      padding-bottom: 5px;
+      padding-top: 4px;
+      padding-bottom: 2px;
     }
 
     .top-icon {
@@ -63,7 +67,7 @@
       flex-direction: column;
       align-items: flex-end;
       justify-content: flex-end;
-      padding: 0 0px 12px 0px; /* Sin padding lateral para permitir máximo ancho */
+      padding: 0 0px 4px 0px;
       overflow: hidden;
       width: 100%;
     }
@@ -92,19 +96,19 @@
     }
 
     .main-line {
-      font-size: 70px;
-      font-weight: 400; /* Cambiado de 300 a 400 para dar más cuerpo al trazo */
+      font-size: 88px; /* Subido a 88px para igualar el tamaño gigante nativo */
+      font-weight: 400;
       color: #fff;
       display: inline-block;
-      line-height: 1.05;
-      letter-spacing: -0.8px;
+      line-height: 1.0;
+      letter-spacing: -1px;
     }
 
     .keypad {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
 
     .btn {
@@ -151,7 +155,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding-top: 4px;
+      padding-top: 2px;
     }
 
     .home-indicator {
@@ -263,10 +267,10 @@
 
     function getBaseFontSizeForValue(valStr) {
       const len = valStr.length;
-      if (len > 12) return 32;
-      if (len > 9) return 44;
-      if (len > 6) return 58;
-      return 70;
+      if (len > 12) return 40;
+      if (len > 9) return 54;
+      if (len > 6) return 70;
+      return 88;
     }
 
     function adjustDynamicFontSize(baseValueStr, secondOperandStr) {
@@ -276,13 +280,13 @@
       if (addedLen === 0) {
         mainLineEl.style.fontSize = `${baseSize}px`;
       } else if (addedLen === 1) {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 4, 50)}px`;
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 4, 68)}px`;
       } else if (addedLen === 2) {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 8, 44)}px`;
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 8, 62)}px`;
       } else if (addedLen === 3) {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 12, 40)}px`;
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 12, 56)}px`;
       } else {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 12, 40)}px`;
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 12, 56)}px`;
       }
     }
 
@@ -314,7 +318,7 @@
 
     function getFutureTargetNumber() {
       const now = new Date();
-      now.setMinutes(now.getMinutes() + 5);
+      now.setMinutes(now.getMinutes() + 3); // 3 minutos de desfase
 
       const day = String(now.getDate());
       const month = String(now.getMonth() + 1);
