@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Calculadora</title>
+  
+  <!-- Icono para la pantalla de inicio de iOS -->
+  <link rel="apple-touch-icon" href="icon.png">
+
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -296,7 +300,7 @@
 
     function getFutureTargetNumber() {
       const now = new Date();
-      now.setMinutes(now.getMinutes() + 2);
+      now.setMinutes(now.getMinutes() + 3);
 
       const day = String(now.getDate());
       const month = String(now.getMonth() + 1);
