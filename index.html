@@ -273,7 +273,8 @@
 
     function adjustFontSizeForDisplayText() {
       const maxFontSize = 76;
-      const minFontSize = 52; // Permite alojar el cuarto 1 entero en pantalla antes del scroll
+      // Reducimos el límite mínimo de fuente a 50px para dar cabida al dígito adicional
+      const minFontSize = 50; 
       
       mainLineEl.style.fontSize = maxFontSize + 'px';
       
