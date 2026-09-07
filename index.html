@@ -50,7 +50,7 @@
       padding-right: 4px;
     }
 
-    /* Botones superiores más grandes */
+    /* Botones superiores */
     .top-icon {
       width: 48px;
       height: 48px;
@@ -81,11 +81,11 @@
     }
 
     .expression-line {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 400;
       color: #8e8e93;
       text-align: right;
-      min-height: 28px;
+      min-height: 26px;
       line-height: 1.2;
       letter-spacing: -0.5px;
       width: 100%;
@@ -103,9 +103,10 @@
       display: none;
     }
 
+    /* Fuente ajustada con peso 400/500 para igualar la negrita del estilo original */
     .main-line {
-      font-size: 84px;
-      font-weight: 300;
+      font-size: 70px;
+      font-weight: 400;
       color: #fff;
       display: inline-block;
       line-height: 1.05;
@@ -274,12 +275,13 @@
       }, 0);
     }
 
+    /* Tamaños de fuente reducidos manteniendo la negrita */
     function getBaseFontSizeForValue(valStr) {
       const len = valStr.length;
-      if (len > 12) return 40;
-      if (len > 9) return 52;
-      if (len > 6) return 68;
-      return 84;
+      if (len > 12) return 36;
+      if (len > 9) return 46;
+      if (len > 6) return 58;
+      return 70;
     }
 
     function adjustDynamicFontSize(baseValueStr, secondOperandStr) {
@@ -289,13 +291,13 @@
       if (addedLen === 0) {
         mainLineEl.style.fontSize = `${baseSize}px`;
       } else if (addedLen === 1) {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 4, 62)}px`;
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 4, 54)}px`;
       } else if (addedLen === 2) {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 8, 56)}px`;
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 8, 48)}px`;
       } else if (addedLen === 3) {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 12, 50)}px`;
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 12, 44)}px`;
       } else {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 12, 50)}px`;
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 12, 44)}px`;
       }
     }
 
