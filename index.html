@@ -274,54 +274,46 @@
       }, 0);
     }
 
-    /* Tamaño de fuente ligeramente aumentado */
-    function getBaseFontSizeForValue(valStr) {
-      const len = valStr.length;
-      if (len > 12) return 38;
-      if (len > 9) return 50;
-      if (len > 6) return 62;
-      return 76;
-    }
+    /* Regla exacta de escalado según el total de caracteres del visor */
+    function adjustFontSizeForDisplayText(displayText) {
+      const len = displayText.length;
 
-    function adjustDynamicFontSize(baseValueStr, secondOperandStr) {
-      const baseSize = getBaseFontSizeForValue(baseValueStr);
-      const addedLen = secondOperandStr ? secondOperandStr.length : 0;
-
-      if (addedLen === 0) {
-        mainLineEl.style.fontSize = `${baseSize}px`;
-      } else if (addedLen === 1) {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 4, 58)}px`;
-      } else if (addedLen === 2) {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 8, 52)}px`;
-      } else if (addedLen === 3) {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 12, 46)}px`;
+      if (len <= 9) {
+        // Hasta 9 caracteres: tamaño máximo sin modificar
+        mainLineEl.style.fontSize = '76px';
+      } else if (len === 10) {
+        // Carácter 10: un poco más pequeño
+        mainLineEl.style.fontSize = '60px';
+      } else if (len === 11) {
+        // Carácter 11: se reduce un poco más para que quepa
+        mainLineEl.style.fontSize = '50px';
       } else {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 12, 46)}px`;
+        // Carácter 12 o superior: se fija el tamaño y entra en acción el scroll
+        mainLineEl.style.fontSize = '44px';
+        scrollToRight();
       }
     }
 
     function updateDisplay() {
+      let fullText = '';
+
       if (stage === 4) {
         const currentTypedAddend = forcedAddendStr.substring(0, forcedIndex);
         const formattedBase = formatNumber(String(currentX));
         const formattedAddend = currentTypedAddend ? formatNumber(currentTypedAddend) : '';
         
-        mainLineEl.innerText = `${formattedBase}+${formattedAddend}`;
-        adjustDynamicFontSize(formattedBase, currentTypedAddend);
-        scrollToRight();
+        fullText = `${formattedBase}+${formattedAddend}`;
       } else if (operator) {
         const formattedBase = formatNumber(previousValue);
         const formattedSecond = !waitingForSecondOperand ? formatNumber(currentValue) : '';
-        const secondRaw = !waitingForSecondOperand ? currentValue : '';
 
-        mainLineEl.innerText = `${formattedBase}${operator}${formattedSecond}`;
-        adjustDynamicFontSize(formattedBase, secondRaw);
-        scrollToRight();
+        fullText = `${formattedBase}${operator}${formattedSecond}`;
       } else {
-        const formatted = formatNumber(currentValue);
-        mainLineEl.innerText = formatted;
-        mainLineEl.style.fontSize = `${getBaseFontSizeForValue(formatted)}px`;
+        fullText = formatNumber(currentValue);
       }
+
+      mainLineEl.innerText = fullText;
+      adjustFontSizeForDisplayText(fullText);
 
       clearBtnEl.innerText = (currentValue !== '0' || previousValue !== null || stage === 4) ? 'C' : 'AC';
     }
