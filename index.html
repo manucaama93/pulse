@@ -94,8 +94,8 @@
       width: 100%;
       overflow-x: auto;
       white-space: nowrap;
-      text-align: right;
       scrollbar-width: none;
+      scroll-behavior: auto;
     }
 
     .main-line-wrapper::-webkit-scrollbar {
@@ -109,6 +109,9 @@
       display: inline-block;
       line-height: 1.05;
       letter-spacing: -1.2px;
+      float: right;
+      min-width: 100%;
+      text-align: right;
     }
 
     .keypad {
@@ -263,14 +266,14 @@
     }
 
     function scrollToRight() {
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         mainWrapperEl.scrollLeft = mainWrapperEl.scrollWidth;
-      }, 0);
+      });
     }
 
     function adjustFontSizeForDisplayText() {
       const maxFontSize = 76;
-      const minFontSize = 50; 
+      const minFontSize = 58; // Límite exacto de iOS antes de desplazar el scroll
       
       mainLineEl.style.fontSize = maxFontSize + 'px';
       
