@@ -280,16 +280,16 @@
 
       if (len <= 9) {
         // Hasta 9 caracteres: tamaño máximo sin modificar
-        mainLineEl.style.fontSize = '76px';
+        mainLineEl.style.fontSize = '72px';
       } else if (len === 10) {
         // Carácter 10: un poco más pequeño
-        mainLineEl.style.fontSize = '74px';
+        mainLineEl.style.fontSize = '68px';
       } else if (len === 11) {
         // Carácter 11: se reduce un poco más para que quepa
-        mainLineEl.style.fontSize = '72px';
+        mainLineEl.style.fontSize = '64px';
       } else {
         // Carácter 12 o superior: se fija el tamaño y entra en acción el scroll
-        mainLineEl.style.fontSize = '72px';
+        mainLineEl.style.fontSize = '64px';
         scrollToRight();
       }
     }
