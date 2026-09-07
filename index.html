@@ -75,7 +75,7 @@
       flex-direction: column;
       align-items: flex-end;
       justify-content: flex-end;
-      padding: 0 6px 12px 6px;
+      padding: 0 4px 12px 4px;
       overflow: hidden;
       width: 100%;
     }
@@ -104,12 +104,12 @@
     }
 
     .main-line {
-      font-size: 76px;
+      font-size: 73px;
       font-weight: 400;
       color: #fff;
       display: inline-block;
       line-height: 1.05;
-      letter-spacing: -0.5px;
+      letter-spacing: -1.5px;
     }
 
     .keypad {
@@ -274,20 +274,20 @@
       }, 0);
     }
 
-    /* Mantiene 76px hasta 10 caracteres y reduce sutilmente a partir del 11 */
+    /* Mantiene la fuente igual hasta incluir el último 4 (11 caracteres) */
     function adjustFontSizeForDisplayText(displayText) {
       const len = displayText.length;
 
-      if (len <= 10) {
-        mainLineEl.style.fontSize = '76px';
-      } else if (len === 11) {
-        mainLineEl.style.fontSize = '70px';
+      if (len <= 11) {
+        mainLineEl.style.fontSize = '73px';
       } else if (len === 12) {
-        mainLineEl.style.fontSize = '64px';
+        mainLineEl.style.fontSize = '66px';
       } else if (len === 13) {
-        mainLineEl.style.fontSize = '58px';
+        mainLineEl.style.fontSize = '60px';
+      } else if (len === 14) {
+        mainLineEl.style.fontSize = '54px';
       } else {
-        mainLineEl.style.fontSize = '50px';
+        mainLineEl.style.fontSize = '48px';
         scrollToRight();
       }
     }
