@@ -103,9 +103,8 @@
       display: none;
     }
 
-    /* Fuente ajustada con peso 400/500 para igualar la negrita del estilo original */
     .main-line {
-      font-size: 70px;
+      font-size: 76px;
       font-weight: 400;
       color: #fff;
       display: inline-block;
@@ -275,13 +274,13 @@
       }, 0);
     }
 
-    /* Tamaños de fuente reducidos manteniendo la negrita */
+    /* Tamaño de fuente ligeramente aumentado */
     function getBaseFontSizeForValue(valStr) {
       const len = valStr.length;
-      if (len > 12) return 36;
-      if (len > 9) return 46;
-      if (len > 6) return 58;
-      return 70;
+      if (len > 12) return 38;
+      if (len > 9) return 50;
+      if (len > 6) return 62;
+      return 76;
     }
 
     function adjustDynamicFontSize(baseValueStr, secondOperandStr) {
@@ -291,13 +290,13 @@
       if (addedLen === 0) {
         mainLineEl.style.fontSize = `${baseSize}px`;
       } else if (addedLen === 1) {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 4, 54)}px`;
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 4, 58)}px`;
       } else if (addedLen === 2) {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 8, 48)}px`;
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 8, 52)}px`;
       } else if (addedLen === 3) {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 12, 44)}px`;
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 12, 46)}px`;
       } else {
-        mainLineEl.style.fontSize = `${Math.max(baseSize - 12, 44)}px`;
+        mainLineEl.style.fontSize = `${Math.max(baseSize - 12, 46)}px`;
       }
     }
 
