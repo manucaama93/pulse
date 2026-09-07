@@ -274,20 +274,21 @@
       }, 0);
     }
 
-    /* Regla exacta de escalado según el total de caracteres del visor (sin contar puntos) */
+    /* Escalado progresivo según el flujo exacto de las capturas */
     function adjustFontSizeForDisplayText(displayText) {
-      // Eliminamos los puntos de miles antes de contar la longitud
       const textWithoutDots = displayText.replace(/\./g, '');
       const len = textWithoutDots.length;
 
       if (len <= 9) {
-        mainLineEl.style.fontSize = '62px';
+        mainLineEl.style.fontSize = '76px';
       } else if (len === 10) {
-        mainLineEl.style.fontSize = '61px';
+        mainLineEl.style.fontSize = '70px';
       } else if (len === 11) {
-        mainLineEl.style.fontSize = '60px';
+        mainLineEl.style.fontSize = '62px';
+      } else if (len === 12) {
+        mainLineEl.style.fontSize = '54px';
       } else {
-        mainLineEl.style.fontSize = '60px';
+        mainLineEl.style.fontSize = '48px';
         scrollToRight();
       }
     }
