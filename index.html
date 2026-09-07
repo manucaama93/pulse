@@ -117,7 +117,6 @@
       transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), background-color 0.12s ease;
     }
 
-    /* Clase activa controlada por JavaScript */
     .btn.is-pressed {
       transform: scale(1.28) !important;
       z-index: 100 !important;
@@ -162,11 +161,19 @@
     </div>
 
     <div class="top-icon">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
-        <rect x="4" y="4" width="6" height="6" rx="1.5"/>
-        <rect x="14" y="4" width="6" height="6" rx="1.5"/>
-        <rect x="4" y="14" width="6" height="6" rx="1.5"/>
-        <rect x="14" y="14" width="6" height="6" rx="1.5"/>
+      <svg width="22" height="22" viewBox="0 0 512 512">
+        <rect width="512" height="512" rx="110" fill="#1c1c1e"/>
+        <rect x="120" y="70" width="272" height="372" rx="60" fill="#d1d1d6"/>
+        <rect x="155" y="105" width="202" height="75" rx="16" fill="#3a3a3c"/>
+        <circle cx="180" cy="235" r="22" fill="#48484a"/>
+        <circle cx="256" cy="235" r="22" fill="#48484a"/>
+        <circle cx="332" cy="235" r="22" fill="#ff9f0a"/>
+        <circle cx="180" cy="305" r="22" fill="#48484a"/>
+        <circle cx="256" cy="305" r="22" fill="#48484a"/>
+        <circle cx="332" cy="305" r="22" fill="#ff9f0a"/>
+        <circle cx="180" cy="375" r="22" fill="#48484a"/>
+        <circle cx="256" cy="375" r="22" fill="#48484a"/>
+        <circle cx="332" cy="375" r="22" fill="#ff9f0a"/>
       </svg>
     </div>
   </div>
@@ -460,7 +467,6 @@
       }
     }
 
-    // --- MANEJO DIRECTO Y UNIFICADO DE EVENTOS DE TOQUE ---
     function executeButtonAction(btn) {
       const action = btn.dataset.action;
       const val = btn.dataset.val;
@@ -494,7 +500,7 @@
       const btn = e.target.closest('.btn');
       if (!btn) return;
 
-      e.preventDefault(); // Previene emulación de clicks tardíos y zoom
+      e.preventDefault();
       btn.classList.add('is-pressed');
       executeButtonAction(btn);
     }
@@ -510,14 +516,12 @@
       }
     }
 
-    // Eventos táctiles para móviles (sin retraso)
     keypadEl.addEventListener('touchstart', handlePressStart, { passive: false });
     keypadEl.addEventListener('touchend', handlePressEnd, { passive: false });
     keypadEl.addEventListener('touchcancel', handlePressEnd, { passive: false });
 
-    // Eventos de ratón para pruebas en ordenador
     keypadEl.addEventListener('mousedown', (e) => {
-      if ('ontouchstart' in window) return; // Si soporta touch, ignorar eventos de ratón
+      if ('ontouchstart' in window) return;
       handlePressStart(e);
     });
     keypadEl.addEventListener('mouseup', (e) => {
