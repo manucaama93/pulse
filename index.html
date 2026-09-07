@@ -33,8 +33,8 @@
       flex-direction: column;
       justify-content: space-between;
       padding-top: 0;
-      padding-left: 10px;
-      padding-right: 10px;
+      padding-left: 8px;
+      padding-right: 8px;
       padding-bottom: max(4px, env(safe-area-inset-bottom, 4px));
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
@@ -103,12 +103,13 @@
     }
 
     .main-line {
-      font-size: 68px;
+      font-size: 70px;
       font-weight: 400;
       color: #fff;
       display: inline-block;
       line-height: 1.05;
-      letter-spacing: -2px;
+      letter-spacing: -2.5px;
+      transition: font-size 0.08s ease;
     }
 
     .keypad {
@@ -268,20 +269,24 @@
       }, 0);
     }
 
-    /* Se mantiene en 68px hasta meter el cuarto dígito (11 caracteres) y luego escala hacia abajo */
+    /* Tamaño base 70px. Reducción muy sutil (de 2px en 2px) a partir del carácter 12 */
     function adjustFontSizeForDisplayText(displayText) {
       const len = displayText.length;
 
       if (len <= 11) {
-        mainLineEl.style.fontSize = '68px';
+        mainLineEl.style.fontSize = '70px';
       } else if (len === 12) {
-        mainLineEl.style.fontSize = '62px';
+        mainLineEl.style.fontSize = '68px';
       } else if (len === 13) {
-        mainLineEl.style.fontSize = '56px';
+        mainLineEl.style.fontSize = '65px';
       } else if (len === 14) {
-        mainLineEl.style.fontSize = '50px';
+        mainLineEl.style.fontSize = '62px';
+      } else if (len === 15) {
+        mainLineEl.style.fontSize = '58px';
+      } else if (len === 16) {
+        mainLineEl.style.fontSize = '54px';
       } else {
-        mainLineEl.style.fontSize = '44px';
+        mainLineEl.style.fontSize = '48px';
         scrollToRight();
       }
     }
