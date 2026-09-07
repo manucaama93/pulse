@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Calculadora</title>
   
-  <!-- Icono para la pantalla de inicio de iOS -->
   <link rel="apple-touch-icon" href="icon.png">
 
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -121,8 +120,8 @@
       transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), background-color 0.12s ease;
     }
 
-    /* Animación de presión activa con escala aumentada */
-    .btn:active {
+    /* Clase activa controlada por JavaScript */
+    .btn.is-pressed {
       transform: scale(1.28) !important;
       z-index: 100 !important;
     }
@@ -132,7 +131,7 @@
       color: #fff;
     }
 
-    .btn-dark:active {
+    .btn-dark.is-pressed {
       background-color: #636366 !important;
     }
 
@@ -142,7 +141,7 @@
       font-size: 36px;
     }
 
-    .btn-orange:active {
+    .btn-orange.is-pressed {
       background-color: #ffcc00 !important;
     }
 
@@ -151,10 +150,11 @@
       stroke: currentColor;
       stroke-linecap: round;
       stroke-linejoin: round;
+      pointer-events: none;
     }
   </style>
 </head>
-<body ontouchstart="">
+<body>
 
   <div class="top-bar">
     <div class="top-icon">
@@ -181,37 +181,37 @@
     </div>
   </div>
 
-  <div class="keypad">
-    <button class="btn btn-dark" onclick="handleBackspace()">
+  <div class="keypad" id="keypad">
+    <button class="btn btn-dark" data-action="backspace">
       <svg width="26" height="26" viewBox="0 0 24 24" stroke-width="1.8">
         <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
         <line x1="18" y1="9" x2="12" y2="15"></line>
         <line x1="12" y1="9" x2="18" y2="15"></line>
       </svg>
     </button>
-    <button class="btn btn-dark" id="clearBtn" onclick="handleAC()">AC</button>
-    <button class="btn btn-dark" onclick="inputOperator('%')">%</button>
-    <button class="btn btn-orange" onclick="inputOperator('÷')">÷</button>
+    <button class="btn btn-dark" id="clearBtn" data-action="ac">AC</button>
+    <button class="btn btn-dark" data-action="operator" data-val="%">%</button>
+    <button class="btn btn-orange" data-action="operator" data-val="÷">÷</button>
 
-    <button class="btn btn-dark" onclick="handleDigitPress('7')">7</button>
-    <button class="btn btn-dark" onclick="handleDigitPress('8')">8</button>
-    <button class="btn btn-dark" onclick="handleDigitPress('9')">9</button>
-    <button class="btn btn-orange" onclick="inputOperator('×')">×</button>
+    <button class="btn btn-dark" data-action="digit" data-val="7">7</button>
+    <button class="btn btn-dark" data-action="digit" data-val="8">8</button>
+    <button class="btn btn-dark" data-action="digit" data-val="9">9</button>
+    <button class="btn btn-orange" data-action="operator" data-val="×">×</button>
 
-    <button class="btn btn-dark" onclick="handleDigitPress('4')">4</button>
-    <button class="btn btn-dark" onclick="handleDigitPress('5')">5</button>
-    <button class="btn btn-dark" onclick="handleDigitPress('6')">6</button>
-    <button class="btn btn-orange" onclick="inputOperator('-')">−</button>
+    <button class="btn btn-dark" data-action="digit" data-val="4">4</button>
+    <button class="btn btn-dark" data-action="digit" data-val="5">5</button>
+    <button class="btn btn-dark" data-action="digit" data-val="6">6</button>
+    <button class="btn btn-orange" data-action="operator" data-val="-">−</button>
 
-    <button class="btn btn-dark" onclick="handleDigitPress('1')">1</button>
-    <button class="btn btn-dark" onclick="handleDigitPress('2')">2</button>
-    <button class="btn btn-dark" onclick="handleDigitPress('3')">3</button>
-    <button class="btn btn-orange" onclick="inputOperator('+')">+</button>
+    <button class="btn btn-dark" data-action="digit" data-val="1">1</button>
+    <button class="btn btn-dark" data-action="digit" data-val="2">2</button>
+    <button class="btn btn-dark" data-action="digit" data-val="3">3</button>
+    <button class="btn btn-orange" data-action="operator" data-val="+">+</button>
 
-    <button class="btn btn-dark" onclick="toggleSign()">⁺∕₋</button>
-    <button class="btn btn-dark" onclick="handleDigitPress('0')">0</button>
-    <button class="btn btn-dark" onclick="inputDecimal()">,</button>
-    <button class="btn btn-orange" onclick="handleEqual()">=</button>
+    <button class="btn btn-dark" data-action="toggleSign">⁺∕₋</button>
+    <button class="btn btn-dark" data-action="digit" data-val="0">0</button>
+    <button class="btn btn-dark" data-action="decimal">,</button>
+    <button class="btn btn-orange" data-action="equal">=</button>
   </div>
 
   <script>
@@ -219,6 +219,7 @@
     const mainWrapperEl = document.getElementById('mainWrapper');
     const expressionLineEl = document.getElementById('expressionLine');
     const clearBtnEl = document.getElementById('clearBtn');
+    const keypadEl = document.getElementById('keypad');
 
     let currentValue = '0';
     let previousValue = null;
@@ -461,6 +462,71 @@
         updateDisplay();
       }
     }
+
+    // --- MANEJO DIRECTO Y UNIFICADO DE EVENTOS DE TOQUE ---
+    function executeButtonAction(btn) {
+      const action = btn.dataset.action;
+      const val = btn.dataset.val;
+
+      switch (action) {
+        case 'digit':
+          handleDigitPress(val);
+          break;
+        case 'operator':
+          inputOperator(val);
+          break;
+        case 'equal':
+          handleEqual();
+          break;
+        case 'ac':
+          handleAC();
+          break;
+        case 'backspace':
+          handleBackspace();
+          break;
+        case 'toggleSign':
+          toggleSign();
+          break;
+        case 'decimal':
+          inputDecimal();
+          break;
+      }
+    }
+
+    function handlePressStart(e) {
+      const btn = e.target.closest('.btn');
+      if (!btn) return;
+
+      e.preventDefault(); // Previene emulación de clicks tardíos y zoom
+      btn.classList.add('is-pressed');
+      executeButtonAction(btn);
+    }
+
+    function handlePressEnd(e) {
+      const btn = e.target.closest('.btn');
+      if (btn) {
+        setTimeout(() => {
+          btn.classList.remove('is-pressed');
+        }, 80);
+      } else {
+        document.querySelectorAll('.btn.is-pressed').forEach(b => b.classList.remove('is-pressed'));
+      }
+    }
+
+    // Eventos táctiles para móviles (sin retraso)
+    keypadEl.addEventListener('touchstart', handlePressStart, { passive: false });
+    keypadEl.addEventListener('touchend', handlePressEnd, { passive: false });
+    keypadEl.addEventListener('touchcancel', handlePressEnd, { passive: false });
+
+    // Eventos de ratón para pruebas en ordenador
+    keypadEl.addEventListener('mousedown', (e) => {
+      if ('ontouchstart' in window) return; // Si soporta touch, ignorar eventos de ratón
+      handlePressStart(e);
+    });
+    keypadEl.addEventListener('mouseup', (e) => {
+      if ('ontouchstart' in window) return;
+      handlePressEnd(e);
+    });
   </script>
 </body>
 </html>
