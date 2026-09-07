@@ -268,10 +268,9 @@
       }, 0);
     }
 
-    /* Mide el ancho real del texto contra el contenedor y reduce fluido de píxel en píxel */
     function adjustFontSizeForDisplayText() {
       const maxFontSize = 76;
-      const minFontSize = 44;
+      const minFontSize = 50; 
       
       mainLineEl.style.fontSize = maxFontSize + 'px';
       
@@ -286,11 +285,9 @@
           mainLineEl.style.fontSize = currentFontSize + 'px';
           currentWidth = mainLineEl.scrollWidth;
         }
-        
-        if (currentWidth > containerWidth) {
-          scrollToRight();
-        }
       }
+
+      scrollToRight();
     }
 
     function updateDisplay() {
