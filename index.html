@@ -274,20 +274,20 @@
       }, 0);
     }
 
-    /* Escalado basado en la longitud visual real (incluyendo puntos) */
+    /* Mantiene 76px hasta 10 caracteres y reduce sutilmente a partir del 11 */
     function adjustFontSizeForDisplayText(displayText) {
       const len = displayText.length;
 
-      if (len <= 8) {
+      if (len <= 10) {
         mainLineEl.style.fontSize = '76px';
-      } else if (len === 9 || len === 10) {
-        mainLineEl.style.fontSize = '68px';
       } else if (len === 11) {
-        mainLineEl.style.fontSize = '60px';
+        mainLineEl.style.fontSize = '70px';
       } else if (len === 12) {
-        mainLineEl.style.fontSize = '52px';
+        mainLineEl.style.fontSize = '64px';
+      } else if (len === 13) {
+        mainLineEl.style.fontSize = '58px';
       } else {
-        mainLineEl.style.fontSize = '46px';
+        mainLineEl.style.fontSize = '50px';
         scrollToRight();
       }
     }
