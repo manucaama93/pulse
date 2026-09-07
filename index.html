@@ -50,10 +50,10 @@
       padding-right: 4px;
     }
 
-    /* Botones superiores circulares grises */
-    .top-icon {
-      width: 36px;
-      height: 36px;
+    /* Botones superiores circulares grises agrandados */
+    .top-icon-btn {
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       background-color: #1c1c1e;
       border: 1.5px solid #2c2c2e;
@@ -61,14 +61,18 @@
       align-items: center;
       justify-content: center;
       box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
+      padding: 0;
+      margin: 0;
+      outline: none;
     }
 
-    /* Estilo e incremento de tamaño de los iconos PNG */
-    .top-icon img {
-      width: 24px;
-      height: 24px;
+    /* Tamaño de los iconos PNG ajustado */
+    .top-icon-btn img {
+      width: 26px;
+      height: 26px;
       object-fit: contain;
       pointer-events: none;
+      display: block;
     }
 
     .display-container {
@@ -188,11 +192,11 @@
 <body>
 
   <div class="top-bar">
-    <div class="top-icon">
+    <div class="top-icon-btn">
       <img src="icon-history.png" alt="Historial">
     </div>
 
-    <div class="top-icon">
+    <div class="top-icon-btn">
       <img src="icon-calc.png" alt="Calculadora">
     </div>
   </div>
