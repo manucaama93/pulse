@@ -32,8 +32,8 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      /* Se aumenta el padding inferior base y el margen del safe-area */
-      padding: 0 16px max(24px, env(safe-area-inset-bottom, 24px)) 16px;
+      /* Se reduce el padding inferior base */
+      padding: 0 16px max(10px, env(safe-area-inset-bottom, 10px)) 16px;
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
@@ -108,8 +108,8 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 14px;
-      /* Se eleva el margen inferior para separar el teclado del borde de la pantalla */
-      margin-bottom: max(34px, env(safe-area-inset-bottom, 34px));
+      /* Margen reducido a un poco menos de la mitad */
+      margin-bottom: max(16px, env(safe-area-inset-bottom, 16px));
     }
 
     .btn {
