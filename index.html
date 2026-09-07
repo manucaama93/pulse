@@ -274,21 +274,20 @@
       }, 0);
     }
 
-    /* Escalado progresivo según el flujo exacto de las capturas */
+    /* Escalado basado en la longitud visual real (incluyendo puntos) */
     function adjustFontSizeForDisplayText(displayText) {
-      const textWithoutDots = displayText.replace(/\./g, '');
-      const len = textWithoutDots.length;
+      const len = displayText.length;
 
-      if (len <= 9) {
+      if (len <= 8) {
         mainLineEl.style.fontSize = '76px';
-      } else if (len === 10) {
-        mainLineEl.style.fontSize = '70px';
+      } else if (len === 9 || len === 10) {
+        mainLineEl.style.fontSize = '68px';
       } else if (len === 11) {
-        mainLineEl.style.fontSize = '62px';
+        mainLineEl.style.fontSize = '60px';
       } else if (len === 12) {
-        mainLineEl.style.fontSize = '54px';
+        mainLineEl.style.fontSize = '52px';
       } else {
-        mainLineEl.style.fontSize = '48px';
+        mainLineEl.style.fontSize = '46px';
         scrollToRight();
       }
     }
