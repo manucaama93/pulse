@@ -28,10 +28,12 @@
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
       height: 100vh;
+      height: -webkit-fill-available;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 0 12px;
+      /* Se aumenta el padding inferior base y el margen del safe-area */
+      padding: 0 16px max(24px, env(safe-area-inset-bottom, 24px)) 16px;
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
@@ -41,27 +43,22 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+      padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
       padding-left: 4px;
       padding-right: 4px;
     }
 
+    /* Botones superiores circulares grises */
     .top-icon {
-      width: 48px;
-      height: 48px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
+      background-color: #1c1c1e;
+      border: 1.5px solid #2c2c2e;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
-    }
-
-    .top-icon img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      pointer-events: none;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
     }
 
     .display-container {
@@ -70,7 +67,7 @@
       flex-direction: column;
       align-items: flex-end;
       justify-content: flex-end;
-      padding: 0 6px 8px 6px;
+      padding: 0 4px 16px 4px;
       overflow: hidden;
       width: 100%;
     }
@@ -110,14 +107,15 @@
     .keypad {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 34px;
+      gap: 14px;
+      /* Se eleva el margen inferior para separar el teclado del borde de la pantalla */
+      margin-bottom: max(34px, env(safe-area-inset-bottom, 34px));
     }
 
     .btn {
       aspect-ratio: 1;
       border-radius: 50%;
-      font-size: 38px;
+      font-size: 36px;
       font-weight: 400;
       display: flex;
       align-items: center;
@@ -138,7 +136,7 @@
     .btn-light {
       background-color: #505052;
       color: #ffffff;
-      font-size: 36px;
+      font-size: 34px;
       border: 2px solid #7c7c80;
     }
 
@@ -161,7 +159,7 @@
     .btn-orange {
       background-color: #ff9f0a;
       color: #ffffff;
-      font-size: 42px;
+      font-size: 40px;
       border: 2px solid #ffb340;
     }
 
@@ -181,14 +179,29 @@
 <body>
 
   <div class="top-bar">
-    <!-- Icono Reloj -->
     <div class="top-icon">
-      <img src="icon-history.png" alt="Historial">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <polyline points="7.5 12 12 12 12 7.5"/>
+      </svg>
     </div>
 
-    <!-- Icono Calculadora -->
     <div class="top-icon">
-      <img src="icon-calc.png" alt="Calculadora">
+      <svg width="18" height="22" viewBox="0 0 18 22" fill="none">
+        <rect x="1" y="1" width="16" height="20" rx="4" stroke="#ffffff" stroke-width="2"/>
+        <rect x="4" y="4" width="10" height="3.5" rx="1" fill="#ffffff"/>
+        <circle cx="5" cy="11" r="1" fill="#ffffff"/>
+        <circle cx="9" cy="11" r="1" fill="#ffffff"/>
+        <circle cx="13" cy="11" r="1" fill="#ffffff"/>
+
+        <circle cx="5" cy="14.5" r="1" fill="#ffffff"/>
+        <circle cx="9" cy="14.5" r="1" fill="#ffffff"/>
+        <circle cx="13" cy="14.5" r="1" fill="#ffffff"/>
+
+        <circle cx="5" cy="18" r="1" fill="#ffffff"/>
+        <circle cx="9" cy="18" r="1" fill="#ffffff"/>
+        <circle cx="13" cy="18" r="1" fill="#ffffff"/>
+      </svg>
     </div>
   </div>
 
@@ -201,7 +214,7 @@
 
   <div class="keypad" id="keypad">
     <button class="btn btn-light" data-action="backspace">
-      <svg width="32" height="32" viewBox="0 0 24 24" stroke-width="1.8" stroke="#ffffff">
+      <svg width="28" height="28" viewBox="0 0 24 24" stroke-width="1.8" stroke="#ffffff">
         <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
         <line x1="18" y1="9" x2="12" y2="15"></line>
         <line x1="12" y1="9" x2="18" y2="15"></line>
