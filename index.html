@@ -103,12 +103,12 @@
     }
 
     .main-line {
-      font-size: 70px;
+      font-size: 73px;
       font-weight: 400;
       color: #fff;
       display: inline-block;
       line-height: 1.05;
-      letter-spacing: -2.5px;
+      letter-spacing: -3px;
       transition: font-size 0.08s ease;
     }
 
@@ -269,20 +269,19 @@
       }, 0);
     }
 
-    /* Tamaño base 70px. Reducción muy sutil (de 2px en 2px) a partir del carácter 12 */
     function adjustFontSizeForDisplayText(displayText) {
       const len = displayText.length;
 
       if (len <= 11) {
-        mainLineEl.style.fontSize = '70px';
+        mainLineEl.style.fontSize = '73px';
       } else if (len === 12) {
-        mainLineEl.style.fontSize = '68px';
+        mainLineEl.style.fontSize = '70.5px';
       } else if (len === 13) {
-        mainLineEl.style.fontSize = '65px';
+        mainLineEl.style.fontSize = '68px';
       } else if (len === 14) {
-        mainLineEl.style.fontSize = '62px';
+        mainLineEl.style.fontSize = '65px';
       } else if (len === 15) {
-        mainLineEl.style.fontSize = '58px';
+        mainLineEl.style.fontSize = '60px';
       } else if (len === 16) {
         mainLineEl.style.fontSize = '54px';
       } else {
