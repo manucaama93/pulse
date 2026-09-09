@@ -48,6 +48,7 @@
       padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
       padding-left: 4px;
       padding-right: 4px;
+      cursor: pointer;
     }
 
     .top-icon {
@@ -77,6 +78,7 @@
       padding: 0 2px 12px 2px;
       overflow: hidden;
       width: 100%;
+      transition: opacity 0.15s ease;
     }
 
     .expression-line {
@@ -184,7 +186,8 @@
 </head>
 <body>
 
-  <div class="top-bar">
+  <!-- La zona superior reacciona al doble toque -->
+  <div class="top-bar" id="topBar">
     <div class="top-icon">
       <img src="icon-history.png" alt="Historial">
     </div>
@@ -194,7 +197,7 @@
     </div>
   </div>
 
-  <div class="display-container">
+  <div class="display-container" id="displayContainer">
     <div class="expression-line" id="expressionLine"></div>
     <div class="main-line-wrapper" id="mainWrapper">
       <div class="main-line" id="mainLine">0</div>
@@ -240,22 +243,45 @@
     const expressionLineEl = document.getElementById('expressionLine');
     const clearBtnEl = document.getElementById('clearBtn');
     const keypadEl = document.getElementById('keypad');
+    const topBarEl = document.getElementById('topBar');
+    const displayContainerEl = document.getElementById('displayContainer');
 
     let currentValue = '0';
     let previousValue = null;
     let operator = null;
     let waitingForSecondOperand = false;
 
-    // Control del truco:
-    // Stage 0: Inicio
-    // Stage 1: Se ha pulsado '×' (esperando multiplicación inicial)
-    // Stage 2: Se completó la multiplicación (tenemos el resultado currentX)
-    // Stage 3: Se pulsó '+' (modo forzado activo donde el espectador escribe)
+    // MODOS DE TRUCO:
+    // '2steps' -> (Multiplicación) -> (Suma Forzada) -> Fecha/Hora
+    // '3steps' -> (Suma) -> (Multiplicación) -> (Suma Forzada) -> Fecha/Hora
+    let activeMode = '2steps'; 
+
     let stage = 0; 
     let currentX = 0;
     let targetResult = 0;
     let forcedAddendStr = '';
     let forcedIndex = 0;
+
+    // Detección de doble toque en la parte superior
+    let lastTopTapTime = 0;
+
+    topBarEl.addEventListener('click', () => {
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTopTapTime;
+
+      if (tapLength < 300 && tapLength > 0) {
+        // Alternar entre los dos modos
+        activeMode = activeMode === '2steps' ? '3steps' : '2steps';
+        handleAC(); // Reinicia la pantalla de forma limpia
+        
+        // Confirmación gráfica discreta (parpadeo sutil del display)
+        displayContainerEl.style.opacity = '0.2';
+        setTimeout(() => {
+          displayContainerEl.style.opacity = '1';
+        }, 150);
+      }
+      lastTopTapTime = currentTime;
+    });
 
     function formatNumber(valStr) {
       if (!valStr || valStr === 'Error') return valStr;
@@ -298,10 +324,14 @@
       scrollToRight();
     }
 
+    function isForcedStage() {
+      return (activeMode === '2steps' && stage === 3) || (activeMode === '3steps' && stage === 4);
+    }
+
     function updateDisplay() {
       let fullText = '';
 
-      if (stage === 3) {
+      if (isForcedStage()) {
         const currentTypedAddend = forcedAddendStr.substring(0, forcedIndex);
         const formattedBase = formatNumber(String(currentX));
         const formattedAddend = currentTypedAddend ? formatNumber(currentTypedAddend) : '';
@@ -319,7 +349,7 @@
       mainLineEl.innerText = fullText;
       adjustFontSizeForDisplayText();
 
-      clearBtnEl.innerText = (currentValue !== '0' || previousValue !== null || stage === 3) ? 'C' : 'AC';
+      clearBtnEl.innerText = (currentValue !== '0' || previousValue !== null || isForcedStage()) ? 'C' : 'AC';
     }
 
     function getFutureTargetNumber() {
@@ -336,7 +366,7 @@
     }
 
     function handleDigitPress(digit) {
-      if (stage === 3) {
+      if (isForcedStage()) {
         if (forcedIndex < forcedAddendStr.length) {
           forcedIndex++;
           updateDisplay();
@@ -353,21 +383,33 @@
       updateDisplay();
     }
 
+    function triggerForcedStage() {
+      targetResult = getFutureTargetNumber();
+      const addendY = targetResult - currentX;
+      forcedAddendStr = String(addendY);
+      forcedIndex = 0;
+      operator = '+';
+      previousValue = String(currentX);
+      waitingForSecondOperand = false;
+      expressionLineEl.innerText = '';
+      updateDisplay();
+    }
+
     function inputOperator(op) {
-      if (op === '×' && stage === 0) {
-        stage = 1; // Iniciamos truco al multiplicar
-      } else if (op === '+' && stage === 2) {
-        stage = 3; // Activamos el modo forzado tras el resultado de la multiplicación
-        targetResult = getFutureTargetNumber();
-        const addendY = targetResult - currentX;
-        forcedAddendStr = String(addendY);
-        forcedIndex = 0;
-        operator = '+';
-        previousValue = String(currentX);
-        waitingForSecondOperand = false;
-        expressionLineEl.innerText = '';
-        updateDisplay();
-        return;
+      if (activeMode === '2steps') {
+        if (op === '×' && stage === 0) stage = 1;
+        else if (op === '+' && stage === 2) {
+          stage = 3;
+          triggerForcedStage();
+          return;
+        }
+      } else if (activeMode === '3steps') {
+        if (op === '+' && stage === 0) stage = 1;
+        else if (op === '+' && stage === 3) {
+          stage = 4;
+          triggerForcedStage();
+          return;
+        }
       }
 
       operator = op;
@@ -378,7 +420,7 @@
     }
 
     function handleEqual() {
-      if (stage === 3) {
+      if (isForcedStage()) {
         expressionLineEl.innerText = `${formatNumber(String(currentX))}+${formatNumber(forcedAddendStr)}`;
         currentValue = String(targetResult);
         stage = 0;
@@ -389,19 +431,52 @@
         return;
       }
 
-      if (operator === '×' && stage === 1) {
+      // Lógica según el modo activo
+      if (activeMode === '2steps' && operator === '×' && stage === 1) {
         const num1 = parseFloat(previousValue.replace(',', '.'));
         const num2 = parseFloat(currentValue.replace(',', '.'));
         currentX = Math.round(num1 * num2);
 
         expressionLineEl.innerText = `${formatNumber(previousValue)}×${formatNumber(currentValue)}`;
         currentValue = String(currentX).replace('.', ',');
-        stage = 2; // Guardamos resultado y pasamos a la etapa previa al '+'
+        stage = 2;
         operator = null;
         previousValue = null;
         waitingForSecondOperand = false;
         updateDisplay();
         return;
+      }
+
+      if (activeMode === '3steps') {
+        if (operator === '+' && stage === 1) {
+          const num1 = parseFloat(previousValue.replace(',', '.'));
+          const num2 = parseFloat(currentValue.replace(',', '.'));
+          const sum = num1 + num2;
+
+          expressionLineEl.innerText = `${formatNumber(previousValue)}+${formatNumber(currentValue)}`;
+          currentValue = String(sum).replace('.', ',');
+          stage = 2;
+          operator = null;
+          previousValue = null;
+          waitingForSecondOperand = false;
+          updateDisplay();
+          return;
+        }
+
+        if (operator === '×' && stage === 2) {
+          const num1 = parseFloat(previousValue.replace(',', '.'));
+          const num2 = parseFloat(currentValue.replace(',', '.'));
+          currentX = Math.round(num1 * num2);
+
+          expressionLineEl.innerText = `${formatNumber(previousValue)}×${formatNumber(currentValue)}`;
+          currentValue = String(currentX).replace('.', ',');
+          stage = 3;
+          operator = null;
+          previousValue = null;
+          waitingForSecondOperand = false;
+          updateDisplay();
+          return;
+        }
       }
 
       if (operator === null || previousValue === null) return;
@@ -439,7 +514,7 @@
     }
 
     function handleBackspace() {
-      if (waitingForSecondOperand || stage === 3) return;
+      if (waitingForSecondOperand || isForcedStage()) return;
       if (currentValue.length > 1) {
         currentValue = currentValue.slice(0, -1);
       } else {
@@ -449,13 +524,13 @@
     }
 
     function toggleSign() {
-      if (currentValue === '0' || stage === 3) return;
+      if (currentValue === '0' || isForcedStage()) return;
       currentValue = currentValue.startsWith('-') ? currentValue.substring(1) : '-' + currentValue;
       updateDisplay();
     }
 
     function inputDecimal() {
-      if (stage === 3) return;
+      if (isForcedStage()) return;
       if (waitingForSecondOperand) {
         currentValue = '0,';
         waitingForSecondOperand = false;
