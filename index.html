@@ -246,6 +246,11 @@
     let operator = null;
     let waitingForSecondOperand = false;
 
+    // Control del truco:
+    // Stage 0: Inicio
+    // Stage 1: Se ha pulsado '×' (esperando multiplicación inicial)
+    // Stage 2: Se completó la multiplicación (tenemos el resultado currentX)
+    // Stage 3: Se pulsó '+' (modo forzado activo donde el espectador escribe)
     let stage = 0; 
     let currentX = 0;
     let targetResult = 0;
@@ -273,7 +278,6 @@
 
     function adjustFontSizeForDisplayText() {
       const maxFontSize = 76;
-      // Reducimos el límite mínimo de fuente a 50px para dar cabida al dígito adicional
       const minFontSize = 50; 
       
       mainLineEl.style.fontSize = maxFontSize + 'px';
@@ -297,7 +301,7 @@
     function updateDisplay() {
       let fullText = '';
 
-      if (stage === 4) {
+      if (stage === 3) {
         const currentTypedAddend = forcedAddendStr.substring(0, forcedIndex);
         const formattedBase = formatNumber(String(currentX));
         const formattedAddend = currentTypedAddend ? formatNumber(currentTypedAddend) : '';
@@ -315,7 +319,7 @@
       mainLineEl.innerText = fullText;
       adjustFontSizeForDisplayText();
 
-      clearBtnEl.innerText = (currentValue !== '0' || previousValue !== null || stage === 4) ? 'C' : 'AC';
+      clearBtnEl.innerText = (currentValue !== '0' || previousValue !== null || stage === 3) ? 'C' : 'AC';
     }
 
     function getFutureTargetNumber() {
@@ -332,7 +336,7 @@
     }
 
     function handleDigitPress(digit) {
-      if (stage === 4) {
+      if (stage === 3) {
         if (forcedIndex < forcedAddendStr.length) {
           forcedIndex++;
           updateDisplay();
@@ -350,10 +354,10 @@
     }
 
     function inputOperator(op) {
-      if (op === '+' && stage === 0) {
-        stage = 1;
-      } else if (op === '+' && stage === 3) {
-        stage = 4;
+      if (op === '×' && stage === 0) {
+        stage = 1; // Iniciamos truco al multiplicar
+      } else if (op === '+' && stage === 2) {
+        stage = 3; // Activamos el modo forzado tras el resultado de la multiplicación
         targetResult = getFutureTargetNumber();
         const addendY = targetResult - currentX;
         forcedAddendStr = String(addendY);
@@ -374,7 +378,7 @@
     }
 
     function handleEqual() {
-      if (stage === 4) {
+      if (stage === 3) {
         expressionLineEl.innerText = `${formatNumber(String(currentX))}+${formatNumber(forcedAddendStr)}`;
         currentValue = String(targetResult);
         stage = 0;
@@ -385,29 +389,14 @@
         return;
       }
 
-      if (operator === '+' && stage === 1) {
-        const num1 = parseFloat(previousValue.replace(',', '.'));
-        const num2 = parseFloat(currentValue.replace(',', '.'));
-        const sum = num1 + num2;
-
-        expressionLineEl.innerText = `${formatNumber(previousValue)}+${formatNumber(currentValue)}`;
-        currentValue = String(sum).replace('.', ',');
-        stage = 2;
-        operator = null;
-        previousValue = null;
-        waitingForSecondOperand = false;
-        updateDisplay();
-        return;
-      }
-
-      if (operator === '×' && stage === 2) {
+      if (operator === '×' && stage === 1) {
         const num1 = parseFloat(previousValue.replace(',', '.'));
         const num2 = parseFloat(currentValue.replace(',', '.'));
         currentX = Math.round(num1 * num2);
 
         expressionLineEl.innerText = `${formatNumber(previousValue)}×${formatNumber(currentValue)}`;
         currentValue = String(currentX).replace('.', ',');
-        stage = 3;
+        stage = 2; // Guardamos resultado y pasamos a la etapa previa al '+'
         operator = null;
         previousValue = null;
         waitingForSecondOperand = false;
@@ -450,7 +439,7 @@
     }
 
     function handleBackspace() {
-      if (waitingForSecondOperand || stage === 4) return;
+      if (waitingForSecondOperand || stage === 3) return;
       if (currentValue.length > 1) {
         currentValue = currentValue.slice(0, -1);
       } else {
@@ -460,13 +449,13 @@
     }
 
     function toggleSign() {
-      if (currentValue === '0' || stage === 4) return;
+      if (currentValue === '0' || stage === 3) return;
       currentValue = currentValue.startsWith('-') ? currentValue.substring(1) : '-' + currentValue;
       updateDisplay();
     }
 
     function inputDecimal() {
-      if (stage === 4) return;
+      if (stage === 3) return;
       if (waitingForSecondOperand) {
         currentValue = '0,';
         waitingForSecondOperand = false;
