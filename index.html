@@ -39,6 +39,7 @@
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      position: relative;
     }
 
     .top-bar {
@@ -78,7 +79,6 @@
       padding: 0 2px 12px 2px;
       overflow: hidden;
       width: 100%;
-      transition: opacity 0.15s ease;
     }
 
     .expression-line {
@@ -182,11 +182,89 @@
       stroke-linejoin: round;
       pointer-events: none;
     }
+
+    /* ESTILOS DEL MENÚ SECRETO */
+    .secret-menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .secret-menu-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .secret-menu-card {
+      background: #1c1c1e;
+      border: 1px solid #2c2c2e;
+      border-radius: 20px;
+      width: 85%;
+      max-width: 340px;
+      padding: 24px 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .menu-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .option-btn {
+      background: #2c2c2e;
+      color: #fff;
+      border: 1px solid #3a3a3c;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .option-btn.active {
+      background: #ff9f0a;
+      border-color: #ffb340;
+      color: #fff;
+    }
+
+    .close-menu-btn {
+      margin-top: 8px;
+      background: #3a3a3c;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
 
-  <!-- La zona superior reacciona al doble toque -->
+  <!-- Barra superior que reacciona al doble toque -->
   <div class="top-bar" id="topBar">
     <div class="top-icon">
       <img src="icon-history.png" alt="Historial">
@@ -237,6 +315,25 @@
     <button class="btn btn-orange" data-action="equal">=</button>
   </div>
 
+  <!-- MENÚ SECRETO OVERLAY -->
+  <div class="secret-menu-overlay" id="secretMenu">
+    <div class="secret-menu-card">
+      <div class="menu-title">Seleccionar Modo de Lógica</div>
+      
+      <div class="option-btn active" id="btnMode2">
+        <span>Modo 2 Pasos (× → +)</span>
+        <span id="check2">✓</span>
+      </div>
+
+      <div class="option-btn" id="btnMode3">
+        <span>Modo 3 Pasos (+ → × → +)</span>
+        <span id="check3" style="display: none;">✓</span>
+      </div>
+
+      <button class="close-menu-btn" id="closeMenuBtn">Guardar y Cerrar</button>
+    </div>
+  </div>
+
   <script>
     const mainLineEl = document.getElementById('mainLine');
     const mainWrapperEl = document.getElementById('mainWrapper');
@@ -244,17 +341,21 @@
     const clearBtnEl = document.getElementById('clearBtn');
     const keypadEl = document.getElementById('keypad');
     const topBarEl = document.getElementById('topBar');
-    const displayContainerEl = document.getElementById('displayContainer');
+
+    // Elementos del menú
+    const secretMenuEl = document.getElementById('secretMenu');
+    const btnMode2 = document.getElementById('btnMode2');
+    const btnMode3 = document.getElementById('btnMode3');
+    const check2 = document.getElementById('check2');
+    const check3 = document.getElementById('check3');
+    const closeMenuBtn = document.getElementById('closeMenuBtn');
 
     let currentValue = '0';
     let previousValue = null;
     let operator = null;
     let waitingForSecondOperand = false;
 
-    // MODOS DE TRUCO:
-    // '2steps' -> (Multiplicación) -> (Suma Forzada) -> Fecha/Hora
-    // '3steps' -> (Suma) -> (Multiplicación) -> (Suma Forzada) -> Fecha/Hora
-    let activeMode = '2steps'; 
+    let activeMode = '2steps'; // '2steps' o '3steps'
 
     let stage = 0; 
     let currentX = 0;
@@ -262,7 +363,7 @@
     let forcedAddendStr = '';
     let forcedIndex = 0;
 
-    // Detección de doble toque en la parte superior
+    // Abrir menú por doble toque
     let lastTopTapTime = 0;
 
     topBarEl.addEventListener('click', () => {
@@ -270,18 +371,38 @@
       const tapLength = currentTime - lastTopTapTime;
 
       if (tapLength < 300 && tapLength > 0) {
-        // Alternar entre los dos modos
-        activeMode = activeMode === '2steps' ? '3steps' : '2steps';
-        handleAC(); // Reinicia la pantalla de forma limpia
-        
-        // Confirmación gráfica discreta (parpadeo sutil del display)
-        displayContainerEl.style.opacity = '0.2';
-        setTimeout(() => {
-          displayContainerEl.style.opacity = '1';
-        }, 150);
+        openSecretMenu();
       }
       lastTopTapTime = currentTime;
     });
+
+    function openSecretMenu() {
+      secretMenuEl.classList.add('visible');
+    }
+
+    function closeSecretMenu() {
+      secretMenuEl.classList.remove('visible');
+      handleAC(); // Resetea pantalla al cambiar parámetros
+    }
+
+    function selectMode(mode) {
+      activeMode = mode;
+      if (mode === '2steps') {
+        btnMode2.classList.add('active');
+        btnMode3.classList.remove('active');
+        check2.style.display = 'inline';
+        check3.style.display = 'none';
+      } else {
+        btnMode3.classList.add('active');
+        btnMode2.classList.remove('active');
+        check3.style.display = 'inline';
+        check2.style.display = 'none';
+      }
+    }
+
+    btnMode2.addEventListener('click', () => selectMode('2steps'));
+    btnMode3.addEventListener('click', () => selectMode('3steps'));
+    closeMenuBtn.addEventListener('click', closeSecretMenu);
 
     function formatNumber(valStr) {
       if (!valStr || valStr === 'Error') return valStr;
@@ -431,7 +552,6 @@
         return;
       }
 
-      // Lógica según el modo activo
       if (activeMode === '2steps' && operator === '×' && stage === 1) {
         const num1 = parseFloat(previousValue.replace(',', '.'));
         const num2 = parseFloat(currentValue.replace(',', '.'));
