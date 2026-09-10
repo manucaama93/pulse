@@ -318,9 +318,9 @@
     <div class="secret-menu-card">
       <div class="menu-title">Seleccionar Modo de Lógica</div>
       
-      <div class="option-btn active" id="btnMode2">
+      <div class="option-btn" id="btnMode2">
         <span>2 Pasos (n1 × n2 + esc)</span>
-        <span id="check2">✓</span>
+        <span id="check2" style="display: none;">✓</span>
       </div>
 
       <div class="option-btn" id="btnMode3">
@@ -328,9 +328,9 @@
         <span id="check3" style="display: none;">✓</span>
       </div>
 
-      <div class="option-btn" id="btnMode4">
+      <div class="option-btn active" id="btnMode4">
         <span>4 Pasos (n1 × n2 × n3 + esc)</span>
-        <span id="check4" style="display: none;">✓</span>
+        <span id="check4">✓</span>
       </div>
 
       <button class="close-menu-btn" id="closeMenuBtn">Guardar y Cerrar</button>
@@ -359,8 +359,8 @@
     let operator = null;
     let waitingForSecondOperand = false;
 
-    // Modos: '2steps', '3steps', '4steps'
-    let activeMode = '2steps'; 
+    // MODO POR DEFECTO: '4steps'
+    let activeMode = '4steps'; 
 
     let stage = 0; 
     let currentX = 0;
@@ -523,7 +523,7 @@
           triggerForcedStage();
           return;
         } else {
-          stage = 0; // Aislar modo estrictamente
+          stage = 0;
         }
       } else if (activeMode === '3steps') {
         if (op === '+' && stage === 0) stage = 1;
@@ -775,4 +775,3 @@
   </script>
 </body>
 </html>
-
