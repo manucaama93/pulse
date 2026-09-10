@@ -183,7 +183,7 @@
       pointer-events: none;
     }
 
-    /* ESTILOS DEL MENÚ SECRETO */
+    /* ESTILOS MENÚ SECRETO */
     .secret-menu-overlay {
       position: fixed;
       top: 0;
@@ -216,7 +216,7 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
 
     .menu-title {
@@ -233,7 +233,7 @@
       border: 1px solid #3a3a3c;
       padding: 14px 16px;
       border-radius: 12px;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 500;
       display: flex;
       justify-content: space-between;
@@ -264,12 +264,10 @@
 </head>
 <body>
 
-  <!-- Barra superior que reacciona al doble toque -->
   <div class="top-bar" id="topBar">
     <div class="top-icon">
       <img src="icon-history.png" alt="Historial">
     </div>
-
     <div class="top-icon">
       <img src="icon-calc.png" alt="Calculadora">
     </div>
@@ -315,19 +313,24 @@
     <button class="btn btn-orange" data-action="equal">=</button>
   </div>
 
-  <!-- MENÚ SECRETO OVERLAY -->
+  <!-- MENÚ SECRETO -->
   <div class="secret-menu-overlay" id="secretMenu">
     <div class="secret-menu-card">
       <div class="menu-title">Seleccionar Modo de Lógica</div>
       
       <div class="option-btn active" id="btnMode2">
-        <span>Modo 2 Pasos (× → +)</span>
+        <span>2 Pasos (n1 × n2 + esc)</span>
         <span id="check2">✓</span>
       </div>
 
       <div class="option-btn" id="btnMode3">
-        <span>Modo 3 Pasos (+ → × → +)</span>
+        <span>3 Pasos (n1 + n2 × n3 + esc)</span>
         <span id="check3" style="display: none;">✓</span>
+      </div>
+
+      <div class="option-btn" id="btnMode4">
+        <span>4 Pasos (n1 × n2 × n3 + esc)</span>
+        <span id="check4" style="display: none;">✓</span>
       </div>
 
       <button class="close-menu-btn" id="closeMenuBtn">Guardar y Cerrar</button>
@@ -342,12 +345,13 @@
     const keypadEl = document.getElementById('keypad');
     const topBarEl = document.getElementById('topBar');
 
-    // Elementos del menú
     const secretMenuEl = document.getElementById('secretMenu');
     const btnMode2 = document.getElementById('btnMode2');
     const btnMode3 = document.getElementById('btnMode3');
+    const btnMode4 = document.getElementById('btnMode4');
     const check2 = document.getElementById('check2');
     const check3 = document.getElementById('check3');
+    const check4 = document.getElementById('check4');
     const closeMenuBtn = document.getElementById('closeMenuBtn');
 
     let currentValue = '0';
@@ -355,7 +359,8 @@
     let operator = null;
     let waitingForSecondOperand = false;
 
-    let activeMode = '2steps'; // '2steps' o '3steps'
+    // Modos: '2steps', '3steps', '4steps'
+    let activeMode = '2steps'; 
 
     let stage = 0; 
     let currentX = 0;
@@ -363,7 +368,7 @@
     let forcedAddendStr = '';
     let forcedIndex = 0;
 
-    // Abrir menú por doble toque
+    // Abrir menú por doble toque en la barra superior
     let lastTopTapTime = 0;
 
     topBarEl.addEventListener('click', () => {
@@ -371,38 +376,30 @@
       const tapLength = currentTime - lastTopTapTime;
 
       if (tapLength < 300 && tapLength > 0) {
-        openSecretMenu();
+        secretMenuEl.classList.add('visible');
       }
       lastTopTapTime = currentTime;
     });
 
-    function openSecretMenu() {
-      secretMenuEl.classList.add('visible');
-    }
-
-    function closeSecretMenu() {
+    closeMenuBtn.addEventListener('click', () => {
       secretMenuEl.classList.remove('visible');
-      handleAC(); // Resetea pantalla al cambiar parámetros
-    }
+      handleAC();
+    });
 
     function selectMode(mode) {
       activeMode = mode;
-      if (mode === '2steps') {
-        btnMode2.classList.add('active');
-        btnMode3.classList.remove('active');
-        check2.style.display = 'inline';
-        check3.style.display = 'none';
-      } else {
-        btnMode3.classList.add('active');
-        btnMode2.classList.remove('active');
-        check3.style.display = 'inline';
-        check2.style.display = 'none';
-      }
+      btnMode2.classList.toggle('active', mode === '2steps');
+      btnMode3.classList.toggle('active', mode === '3steps');
+      btnMode4.classList.toggle('active', mode === '4steps');
+      
+      check2.style.display = mode === '2steps' ? 'inline' : 'none';
+      check3.style.display = mode === '3steps' ? 'inline' : 'none';
+      check4.style.display = mode === '4steps' ? 'inline' : 'none';
     }
 
     btnMode2.addEventListener('click', () => selectMode('2steps'));
     btnMode3.addEventListener('click', () => selectMode('3steps'));
-    closeMenuBtn.addEventListener('click', closeSecretMenu);
+    btnMode4.addEventListener('click', () => selectMode('4steps'));
 
     function formatNumber(valStr) {
       if (!valStr || valStr === 'Error') return valStr;
@@ -446,7 +443,9 @@
     }
 
     function isForcedStage() {
-      return (activeMode === '2steps' && stage === 3) || (activeMode === '3steps' && stage === 4);
+      return (activeMode === '2steps' && stage === 3) || 
+             (activeMode === '3steps' && stage === 4) ||
+             (activeMode === '4steps' && stage === 4);
     }
 
     function updateDisplay() {
@@ -523,6 +522,8 @@
           stage = 3;
           triggerForcedStage();
           return;
+        } else {
+          stage = 0; // Aislar modo estrictamente
         }
       } else if (activeMode === '3steps') {
         if (op === '+' && stage === 0) stage = 1;
@@ -530,6 +531,17 @@
           stage = 4;
           triggerForcedStage();
           return;
+        } else if (stage !== 1 && stage !== 2) {
+          stage = 0;
+        }
+      } else if (activeMode === '4steps') {
+        if (op === '×' && stage === 0) stage = 1;
+        else if (op === '+' && stage === 3) {
+          stage = 4;
+          triggerForcedStage();
+          return;
+        } else if (stage !== 1 && stage !== 2) {
+          stage = 0;
         }
       }
 
@@ -552,6 +564,7 @@
         return;
       }
 
+      // LÓGICA MODO 2 PASOS
       if (activeMode === '2steps' && operator === '×' && stage === 1) {
         const num1 = parseFloat(previousValue.replace(',', '.'));
         const num2 = parseFloat(currentValue.replace(',', '.'));
@@ -567,6 +580,7 @@
         return;
       }
 
+      // LÓGICA MODO 3 PASOS
       if (activeMode === '3steps') {
         if (operator === '+' && stage === 1) {
           const num1 = parseFloat(previousValue.replace(',', '.'));
@@ -599,6 +613,40 @@
         }
       }
 
+      // LÓGICA MODO 4 PASOS (n1 * n2 = res1 * n3 = res2 -> + esc)
+      if (activeMode === '4steps') {
+        if (operator === '×' && stage === 1) {
+          const num1 = parseFloat(previousValue.replace(',', '.'));
+          const num2 = parseFloat(currentValue.replace(',', '.'));
+          const mult1 = Math.round(num1 * num2);
+
+          expressionLineEl.innerText = `${formatNumber(previousValue)}×${formatNumber(currentValue)}`;
+          currentValue = String(mult1).replace('.', ',');
+          stage = 2;
+          operator = null;
+          previousValue = null;
+          waitingForSecondOperand = false;
+          updateDisplay();
+          return;
+        }
+
+        if (operator === '×' && stage === 2) {
+          const num1 = parseFloat(previousValue.replace(',', '.'));
+          const num2 = parseFloat(currentValue.replace(',', '.'));
+          currentX = Math.round(num1 * num2);
+
+          expressionLineEl.innerText = `${formatNumber(previousValue)}×${formatNumber(currentValue)}`;
+          currentValue = String(currentX).replace('.', ',');
+          stage = 3;
+          operator = null;
+          previousValue = null;
+          waitingForSecondOperand = false;
+          updateDisplay();
+          return;
+        }
+      }
+
+      // Operación Estándar
       if (operator === null || previousValue === null) return;
       const num1 = parseFloat(previousValue.replace(',', '.'));
       const num2 = parseFloat(currentValue.replace(',', '.'));
