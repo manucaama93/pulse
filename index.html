@@ -183,20 +183,6 @@
       pointer-events: none;
     }
 
-    /* GUIÑO VISUAL: PUNTO CASI INVISIBLE */
-    .time-wink {
-      position: fixed;
-      bottom: 2px;
-      right: 2px;
-      width: 2px;
-      height: 2px;
-      background-color: #3a3a3c;
-      border-radius: 50%;
-      display: none;
-      z-index: 9999;
-      pointer-events: none;
-    }
-
     /* ESTILOS MENÚ SECRETO */
     .secret-menu-overlay {
       position: fixed;
@@ -327,9 +313,6 @@
     <button class="btn btn-orange" data-action="equal">=</button>
   </div>
 
-  <!-- PUNTO INDICADOR SECRETO -->
-  <div class="time-wink" id="timeWink"></div>
-
   <!-- MENÚ SECRETO -->
   <div class="secret-menu-overlay" id="secretMenu">
     <div class="secret-menu-card">
@@ -361,7 +344,6 @@
     const clearBtnEl = document.getElementById('clearBtn');
     const keypadEl = document.getElementById('keypad');
     const topBarEl = document.getElementById('topBar');
-    const timeWinkEl = document.getElementById('timeWink');
 
     const secretMenuEl = document.getElementById('secretMenu');
     const btnMode2 = document.getElementById('btnMode2');
@@ -377,6 +359,7 @@
     let operator = null;
     let waitingForSecondOperand = false;
 
+    // MODO POR DEFECTO: '4steps'
     let activeMode = '4steps'; 
 
     let stage = 0; 
@@ -385,6 +368,7 @@
     let forcedAddendStr = '';
     let forcedIndex = 0;
 
+    // Abrir menú por doble toque en la barra superior
     let lastTopTapTime = 0;
 
     topBarEl.addEventListener('click', () => {
@@ -488,18 +472,9 @@
       clearBtnEl.innerText = (currentValue !== '0' || previousValue !== null || isForcedStage()) ? 'C' : 'AC';
     }
 
-    // CÁLCULO DE HORA DINÁMICO + INDICADOR VISUAL
     function getFutureTargetNumber() {
       const now = new Date();
-      const currentSeconds = now.getSeconds();
-
-      if (currentSeconds > 30) {
-        now.setMinutes(now.getMinutes() + 3);
-        timeWinkEl.style.display = 'block'; // Muestra el punto casi invisible
-      } else {
-        now.setMinutes(now.getMinutes() + 2);
-        timeWinkEl.style.display = 'none';
-      }
+      now.setMinutes(now.getMinutes() + 2);
 
       const day = String(now.getDate());
       const month = String(now.getMonth() + 1);
@@ -585,11 +560,11 @@
         operator = null;
         previousValue = null;
         waitingForSecondOperand = false;
-        timeWinkEl.style.display = 'none'; // Oculta el guiño al terminar el truco
         updateDisplay();
         return;
       }
 
+      // LÓGICA MODO 2 PASOS
       if (activeMode === '2steps' && operator === '×' && stage === 1) {
         const num1 = parseFloat(previousValue.replace(',', '.'));
         const num2 = parseFloat(currentValue.replace(',', '.'));
@@ -605,6 +580,7 @@
         return;
       }
 
+      // LÓGICA MODO 3 PASOS
       if (activeMode === '3steps') {
         if (operator === '+' && stage === 1) {
           const num1 = parseFloat(previousValue.replace(',', '.'));
@@ -637,6 +613,7 @@
         }
       }
 
+      // LÓGICA MODO 4 PASOS (n1 * n2 = res1 * n3 = res2 -> + esc)
       if (activeMode === '4steps') {
         if (operator === '×' && stage === 1) {
           const num1 = parseFloat(previousValue.replace(',', '.'));
@@ -669,6 +646,7 @@
         }
       }
 
+      // Operación Estándar
       if (operator === null || previousValue === null) return;
       const num1 = parseFloat(previousValue.replace(',', '.'));
       const num2 = parseFloat(currentValue.replace(',', '.'));
@@ -700,7 +678,6 @@
       forcedAddendStr = '';
       forcedIndex = 0;
       expressionLineEl.innerText = '';
-      timeWinkEl.style.display = 'none';
       updateDisplay();
     }
 
