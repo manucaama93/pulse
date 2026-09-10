@@ -183,14 +183,14 @@
       pointer-events: none;
     }
 
-    /* GUIÑO VISUAL: PUNTO CASI INVISIBLE */
+    /* GUIÑO VISUAL: PUNTO BLANCO DE 2PX */
     .time-wink {
       position: fixed;
       bottom: 2px;
       right: 2px;
       width: 2px;
       height: 2px;
-      background-color: #3a3a3c;
+      background-color: #ffffff;
       border-radius: 50%;
       display: none;
       z-index: 9999;
@@ -488,14 +488,13 @@
       clearBtnEl.innerText = (currentValue !== '0' || previousValue !== null || isForcedStage()) ? 'C' : 'AC';
     }
 
-    // CÁLCULO DE HORA DINÁMICO + INDICADOR VISUAL
     function getFutureTargetNumber() {
       const now = new Date();
       const currentSeconds = now.getSeconds();
 
       if (currentSeconds > 30) {
         now.setMinutes(now.getMinutes() + 3);
-        timeWinkEl.style.display = 'block'; // Muestra el punto casi invisible
+        timeWinkEl.style.display = 'block';
       } else {
         now.setMinutes(now.getMinutes() + 2);
         timeWinkEl.style.display = 'none';
@@ -585,7 +584,7 @@
         operator = null;
         previousValue = null;
         waitingForSecondOperand = false;
-        timeWinkEl.style.display = 'none'; // Oculta el guiño al terminar el truco
+        timeWinkEl.style.display = 'none';
         updateDisplay();
         return;
       }
